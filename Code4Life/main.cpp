@@ -8,6 +8,9 @@
 #include <stdio.h>
 #include <roboticscape.h> // includes ALL robotics cape subsystems
 
+//eg er að profa breyta
+// mamma hilmars er svísa
+
 // function declarations
 void on_pause_press();
 void on_pause_release();
