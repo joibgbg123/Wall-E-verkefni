@@ -1,3 +1,3 @@
 # prufa-eitt
-bara að prófa að gera eitthvað til þess að skoða virkni
+bara að prófa að gera eitthvað til þess að skoða virkni \newline
 sem er engin....
