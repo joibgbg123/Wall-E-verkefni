@@ -1,113 +1,177 @@
-/**
- * @file rc_project_template.c
- *
- * This is meant to be a skeleton program for robotics cape projects. Change
- * this description and file name before starting your own.
- */
+/*******************************************************************************
+* rc_project_template.c
+*
+* This is meant to be a skeleton program for robotics cape projects.
+* Change this description and file name
+*******************************************************************************/
+
+// usefulincludes is a collection of common system includes for the lazy
+// This is not necessary for roboticscape projects but here for convenience
+#include <rc_usefulincludes.h>
+// main roboticscape API header
+#include <roboticscape.h>
 
 #include <stdio.h>
-#include <roboticscape.h> // includes ALL robotics cape subsystems
+#include <signal.h>
+#include <stdlib.h> // for atoi
+#include <getopt.h>
+
+
 
 // function declarations
-void on_pause_press();
-void on_pause_release();
+void on_pause_pressed();
+void on_pause_released();
+void Drive();
 
 
-/**
- * This template contains these critical components
- * - ensure no existing instances are running and make new PID file
- * - start the signal handler
- * - initialize subsystems you wish to use
- * - while loop that checks for EXITING condition
- * - cleanup subsystems at the end
- *
- * @return     0 during normal operation, -1 on error
- */
-int main()
-{
-	// make sure another instance isn't running
-	rc_kill_existing_process(2.0);
-
-	// start signal handler so we can exit cleanly
-	if(rc_enable_signal_handler()==-1){
-		fprintf(stderr,"ERROR: failed to start signal handler\n");
+/*******************************************************************************
+* int main()
+*
+* This template main function contains these critical components
+* - call to rc_initialize() at the beginning
+* - main while loop that checks for EXITING condition
+* - rc_cleanup() at the end
+*******************************************************************************/
+int main(){
+	// always initialize cape library first
+	if(rc_initialize()){
+		fprintf(stderr,"ERROR: failed to initialize rc_initialize(), are you root?\n");
 		return -1;
 	}
 
-	// initialize pause button
-	if(rc_button_init(RC_BTN_PIN_PAUSE, RC_BTN_POLARITY_NORM_HIGH,
-						RC_BTN_DEBOUNCE_DEFAULT_US)){
-		fprintf(stderr,"ERROR: failed to initialize pause button\n");
-		return -1;
-	}
+/*	double duty1 = 0.4;
+	int ch3 = 1;
+	double duty2 = -0.4;
+	int ch2 = 2;*/
 
-	// Assign functions to be called when button events occur
-	rc_button_set_callbacks(RC_BTN_PIN_PAUSE,on_pause_press,on_pause_release);
+	// do your own initialization here
+	printf("\nHello BeagleBone\n");
+	rc_set_pause_pressed_func(&on_pause_pressed);
+	rc_set_pause_released_func(&on_pause_released);
 
-	// make PID file to indicate your project is running
-	rc_make_pid_file();
+	// done initializing so set state to RUNNING
+	rc_set_state(RUNNING);
 
-
-	printf("\nPress and release pause button to turn green LED on and off\n");
-	printf("hold pause button down for 2 seconds to exit\n");
+	// Kveikjum a hardware
+	rc_enable_motors();
 
 	// Keep looping until state changes to EXITING
-	rc_set_state(RUNNING);
 	while(rc_get_state()!=EXITING){
-
-    double duty = 0.0;
-	int ch = 1;
-	int c, in;
-	int all = 1;	// set to 0 if a motor (-m) argument is given
-	m_mode_t m_mode = DISABLED;
-
-	duty = 1.0;
-
-	ch = 2;
-
-	duty = -1.0;
-
-
+		// handle other states
+		if(rc_get_state()==RUNNING){
+			// do things
+			rc_set_led(GREEN, ON);
+			rc_set_led(RED, OFF);
+			Drive();
+		}
+		else if(rc_get_state()==PAUSED){
+			// do other things
+			rc_set_led(GREEN, OFF);
+			rc_set_led(RED, ON);
+		}
 		// always sleep at some point
-		rc_usleep(100000);
+		usleep(100000);
 	}
 
-	// turn off LEDs and close file descriptors
-	rc_led_set(RC_LED_GREEN, 0);
-	rc_led_set(RC_LED_RED, 0);
-	rc_motor_cleanup();
-	rc_button_cleanup();	// stop button handlers
-	rc_remove_pid_file();	// remove pid file LAST
+	// exit cleanly
+	rc_cleanup();
 	return 0;
 }
 
-
-/**
- * Make the Pause button toggle between paused and running states.
- */
-void on_pause_release()
+void Drive()
 {
-	if(rc_get_state()==RUNNING)	rc_set_state(PAUSED);
+
+double duty = 0.4;
+
+system("stty raw");
+
+//char input;
+//do{
+    char input = getchar();
+    printf("> ");
+
+    switch(input){
+        case 'w':
+            rc_set_motor(1, duty);
+            rc_set_motor(2, -duty);
+            printf("Autobots! Roll out \n");
+            break;
+
+        case 's':
+            rc_set_motor(1, -duty);
+            rc_set_motor(2, duty);
+            printf("Run Away!!! \n");
+            break;
+
+        case 'a':
+            rc_set_motor(1, -0.1);
+            rc_set_motor(2, -duty);
+            printf("vinstri beygja \n");
+            break;
+
+        case 'd':
+            rc_set_motor(1, duty);
+            rc_set_motor(2, 0.1);
+            printf("haegri beygja \n");
+            break;
+
+        case 'f': ///STOPPA
+            rc_set_motor(1, 0.0);
+            rc_set_motor(2, 0.0);
+            printf("Stopp an thess ad haetta akstri \n");
+            break;
+
+        case 'q': ///
+            rc_set_state(PAUSED);
+            rc_set_motor(1, 0.0);
+            rc_set_motor(2, 0.0);
+            printf("Settur í PAUSED MODE \n");
+            break;
+
+        default:
+            printf("WASD til ad hreyfast \n");
+            printf("f til ad stoppa en vera enta i running \n");
+            printf("q til ad fara i PAUSED og haetta \n");
+            break;
+
+    }
+//}while(rc_get_state()==RUNNING);
+//rc_set_motor(1, 0.0);
+//rc_set_motor(2, 0.0);
+
+}
+
+
+/*******************************************************************************
+* void on_pause_released()
+*
+* Make the Pause button toggle between paused and running states.
+*******************************************************************************/
+void on_pause_released(){
+	// toggle betewen paused and running modes
+	if(rc_get_state()==RUNNING)		rc_set_state(PAUSED);
 	else if(rc_get_state()==PAUSED)	rc_set_state(RUNNING);
 	return;
 }
 
-/**
-* If the user holds the pause button for 2 seconds, set state to EXITING which
+/*******************************************************************************
+* void on_pause_pressed()
+*
+* If the user holds the pause button for 2 seconds, set state to exiting which
 * triggers the rest of the program to exit cleanly.
-**/
-void on_pause_press()
-{
-	int i;
-	const int samples = 100; // check for release 100 times in this period
+*******************************************************************************/
+void on_pause_pressed(){
+	int i=0;
+	const int samples = 100;	// check for release 100 times in this period
 	const int us_wait = 2000000; // 2 seconds
 
 	// now keep checking to see if the button is still held down
 	for(i=0;i<samples;i++){
 		rc_usleep(us_wait/samples);
-		if(rc_button_get_state(RC_BTN_PIN_PAUSE)==RC_BTN_STATE_RELEASED) return;
+		if(rc_get_pause_button() == RELEASED) return;
 	}
 	printf("long press detected, shutting down\n");
 	rc_set_state(EXITING);
 	return;
 }
+
