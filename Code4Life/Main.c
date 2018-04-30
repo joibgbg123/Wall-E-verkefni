@@ -49,6 +49,7 @@ int main(){
 
 	// Kveikjum a hardware
 	rc_enable_motors();
+	rc_enable_servo_power_rail();
 
 	// Keep looping until state changes to EXITING
 	while(rc_get_state()!=EXITING){
@@ -94,6 +95,8 @@ system("stty raw"); // Þarf ekki að ýtta á enter.
             rc_set_motor(LeftMotor, duty);
             rc_set_motor(RightMotor, -duty);
             printf("Autobots! Roll out \n");
+            printf("| E1 | E2 |\n");
+            printf("| %i | %i |\n",rc_get_encoder_pos(1),rc_get_encoder_pos(2));
             break;
 
         case 's':
@@ -122,14 +125,32 @@ system("stty raw"); // Þarf ekki að ýtta á enter.
 
         case 'q': ///
             rc_set_state(PAUSED);
+
             rc_set_motor(LeftMotor, 0.0);
             rc_set_motor(RightMotor, 0.0);
+            rc_disable_servo_power_rail();
+
             printf("Settur í PAUSED MODE \n");
             break;
 
+        case 'b':
+            rc_send_servo_pulse_us(4,1500);
+            rc_send_servo_pulse_us(8,1500);
+            printf("position 0°\n");
+            rc_usleep(1000000/frequency_hz);
+            break;
+
+        case 'n':
+            rc_send_servo_pulse_us(4,2100);
+            rc_send_servo_pulse_us(8,2100);
+            printf("position 60°\n");
+            break;
+
+
+
         default:
             printf("WASD til ad hreyfast \n");
-            printf("f til ad stoppa en vera enta i running \n");
+            printf("f til ad stoppa en vera entha i running \n");
             printf("q til ad fara i PAUSED og haetta \n");
             break;
 
