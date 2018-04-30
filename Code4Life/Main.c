@@ -39,11 +39,6 @@ int main(){
 		return -1;
 	}
 
-/*	double duty1 = 0.4;
-	int ch3 = 1;
-	double duty2 = -0.4;
-	int ch2 = 2;*/
-
 	// do your own initialization here
 	printf("\nHello BeagleBone\n");
 	rc_set_pause_pressed_func(&on_pause_pressed);
@@ -81,6 +76,7 @@ int main(){
 	return 0;
 }
 
+///Keyrslan
 void Drive()
 {
 
@@ -88,9 +84,11 @@ void Drive()
     double duty1 = duty_start;
     double duty2 = -duty_start;
 
+    /* Never mind that one then
     /// Motor definitions
     int motor_right = 2;
     int motor_left = 1;
+    */
 
 	/// Encoder definitions
 	int encoder_right = 2;
@@ -98,7 +96,9 @@ void Drive()
 	int E1 = 0;
 	int E2 = 0;
 
+
 system("stty raw");  /// No need for pressing 'enter' after every input.
+
 
 //char input;
 //do{
@@ -109,6 +109,7 @@ system("stty raw");  /// No need for pressing 'enter' after every input.
         case 'w':
             rc_set_motor(motor_left, duty1);
             rc_set_motor(motor_right, duty2);
+
             printf("Autobots! Roll out \n");
             printf("| E1 | E2 |\n");
             printf("| %i | %i |\n",-E1,E2);
@@ -144,16 +145,19 @@ system("stty raw");  /// No need for pressing 'enter' after every input.
         case 's':
             rc_set_motor(motor_left, -duty1);
             rc_set_motor(motor_right, -duty2);
+
             printf("Run Away!!! \n");
             break;
 
         case 'a':
             rc_set_motor(motor_left, -0.1);
             rc_set_motor(motor_right, duty_start);
+
             printf("vinstri beygja \n");
             break;
 
         case 'd':
+
             rc_set_motor(motor_left, duty_start);
             rc_set_motor(motor_right, 0.1);
             printf("haegri beygja \n");
@@ -170,6 +174,7 @@ system("stty raw");  /// No need for pressing 'enter' after every input.
             rc_set_motor(motor_left, 0.0);
             rc_set_motor(motor_right, 0.0);
             rc_disable_servo_power_rail();
+
             printf("Settur í PAUSED MODE \n");
             break;
 
