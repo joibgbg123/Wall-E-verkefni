@@ -150,8 +150,8 @@ system("stty raw");  /// No need for pressing 'enter' after every input.
             break;
 
         case 'a':
-            rc_set_motor(motor_left, -0.1);
-            rc_set_motor(motor_right, duty_start);
+            rc_set_motor(motor_left, -duty_start/2);
+            rc_set_motor(motor_right, -duty_start);
 
             printf("vinstri beygja \n");
             break;
@@ -159,7 +159,7 @@ system("stty raw");  /// No need for pressing 'enter' after every input.
         case 'd':
 
             rc_set_motor(motor_left, duty_start);
-            rc_set_motor(motor_right, 0.1);
+            rc_set_motor(motor_right, duty_start/2);
             printf("haegri beygja \n");
             break;
 
