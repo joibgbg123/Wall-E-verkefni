@@ -56,6 +56,8 @@ int main(){
 	rc_enable_motors();
 	rc_enable_servo_power_rail();
 
+
+
 	// Keep looping until state changes to EXITING
 	while(rc_get_state()!=EXITING){
 		// handle other states
@@ -82,9 +84,21 @@ int main(){
 void Drive()
 {
 
-double duty = 0.4;
+    double duty_start = 0.4;
+    double duty1 = duty_start;
+    double duty2 = -duty_start;
 
-system("stty raw");
+    /// Motor definitions
+    int motor_right = 2;
+    int motor_left = 1;
+
+	/// Encoder definitions
+	int encoder_right = 2;
+	int encoder_left = 1;
+	int E1 = 0;
+	int E2 = 0;
+
+system("stty raw");  /// No need for pressing 'enter' after every input.
 
 //char input;
 //do{
@@ -93,41 +107,68 @@ system("stty raw");
 
     switch(input){
         case 'w':
-            rc_set_motor(1, duty);
-            rc_set_motor(2, -duty);
+            rc_set_motor(motor_left, duty1);
+            rc_set_motor(motor_right, duty2);
             printf("Autobots! Roll out \n");
             printf("| E1 | E2 |\n");
-            printf("| %i | %i |\n",rc_get_encoder_pos(1),rc_get_encoder_pos(2));
+            printf("| %i | %i |\n",-E1,E2);
+
+            E1 = rc_get_encoder_pos(encoder_left);
+            E2 = -rc_get_encoder_pos(encoder_right);
+
+            if (E1 > E2 && duty2 < 0.8)
+            {
+                duty2=+0.025;
+                rc_set_motor(motor_right, duty2);
+            }
+            else if (E1 < E2 && duty1 < 0.8)
+            {
+                duty1=+0.025;
+                rc_set_motor(motor_left, duty1);
+            }
+            else if (E1 > E2)
+            {
+                duty1=-0.025;
+                rc_set_motor(motor_left, duty1);
+            }
+            else if (E1 < E2)
+            {
+                duty2=-0.025;
+                rc_set_motor(motor_right, duty2);
+            }
+            else {
+                /// keep driving if they are the same
+            }
             break;
 
         case 's':
-            rc_set_motor(1, -duty);
-            rc_set_motor(2, duty);
+            rc_set_motor(motor_left, -duty1);
+            rc_set_motor(motor_right, -duty2);
             printf("Run Away!!! \n");
             break;
 
         case 'a':
-            rc_set_motor(1, -0.1);
-            rc_set_motor(2, -duty);
+            rc_set_motor(motor_left, -0.1);
+            rc_set_motor(motor_right, duty_start);
             printf("vinstri beygja \n");
             break;
 
         case 'd':
-            rc_set_motor(1, duty);
-            rc_set_motor(2, 0.1);
+            rc_set_motor(motor_left, duty_start);
+            rc_set_motor(motor_right, 0.1);
             printf("haegri beygja \n");
             break;
 
         case 'f': ///STOPPA
-            rc_set_motor(1, 0.0);
-            rc_set_motor(2, 0.0);
+            rc_set_motor(motor_left, 0.0);
+            rc_set_motor(motor_right, 0.0);
             printf("Stopp an thess ad haetta akstri \n");
             break;
 
         case 'q': ///
             rc_set_state(PAUSED);
-            rc_set_motor(1, 0.0);
-            rc_set_motor(2, 0.0);
+            rc_set_motor(motor_left, 0.0);
+            rc_set_motor(motor_right, 0.0);
             rc_disable_servo_power_rail();
             printf("Settur í PAUSED MODE \n");
             break;
@@ -136,7 +177,7 @@ system("stty raw");
             rc_send_servo_pulse_us(4,1500);
             rc_send_servo_pulse_us(8,1500);
             printf("position 0°\n");
-            rc_usleep(1000000/frequency_hz);
+            /// rc_usleep(1000000/frequency_hz);
             break;
 
         case 'n':
