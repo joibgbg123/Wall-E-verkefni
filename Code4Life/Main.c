@@ -39,11 +39,6 @@ int main(){
 		return -1;
 	}
 
-/*	double duty1 = 0.4;
-	int ch3 = 1;
-	double duty2 = -0.4;
-	int ch2 = 2;*/
-
 	// do your own initialization here
 	printf("\nHello BeagleBone\n");
 	rc_set_pause_pressed_func(&on_pause_pressed);
@@ -78,12 +73,16 @@ int main(){
 	return 0;
 }
 
+///Keyrslan
 void Drive()
 {
 
 double duty = 0.4;
 
-system("stty raw");
+#define LeftMotor 1
+#define RightMotor 2
+
+system("stty raw"); // Þarf ekki að ýtta á enter.
 
 //char input;
 //do{
@@ -92,39 +91,39 @@ system("stty raw");
 
     switch(input){
         case 'w':
-            rc_set_motor(1, duty);
-            rc_set_motor(2, -duty);
+            rc_set_motor(LeftMotor, duty);
+            rc_set_motor(RightMotor, -duty);
             printf("Autobots! Roll out \n");
             break;
 
         case 's':
-            rc_set_motor(1, -duty);
-            rc_set_motor(2, duty);
+            rc_set_motor(LeftMotor, -duty);
+            rc_set_motor(RightMotor, duty);
             printf("Run Away!!! \n");
             break;
 
         case 'a':
-            rc_set_motor(1, -0.1);
-            rc_set_motor(2, -duty);
+            rc_set_motor(LeftMotor, -duty/2);
+            rc_set_motor(RightMotor, -duty);
             printf("vinstri beygja \n");
             break;
 
         case 'd':
-            rc_set_motor(1, duty);
-            rc_set_motor(2, 0.1);
+            rc_set_motor(LeftMotor, duty);
+            rc_set_motor(RightMotor, duty/2);
             printf("haegri beygja \n");
             break;
 
         case 'f': ///STOPPA
-            rc_set_motor(1, 0.0);
-            rc_set_motor(2, 0.0);
+            rc_set_motor(LeftMotor, 0.0);
+            rc_set_motor(RightMotor, 0.0);
             printf("Stopp an thess ad haetta akstri \n");
             break;
 
         case 'q': ///
             rc_set_state(PAUSED);
-            rc_set_motor(1, 0.0);
-            rc_set_motor(2, 0.0);
+            rc_set_motor(LeftMotor, 0.0);
+            rc_set_motor(RightMotor, 0.0);
             printf("Settur í PAUSED MODE \n");
             break;
 
