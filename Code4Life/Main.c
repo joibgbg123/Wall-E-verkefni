@@ -119,7 +119,7 @@ system("stty raw");  /// No need for pressing 'enter' after every input.
 
             if (E1 > E2 && duty2 < 0.8)
             {
-                duty2=+0.025;
+                duty2=-0.025;
                 rc_set_motor(motor_right, duty2);
             }
             else if (E1 < E2 && duty1 < 0.8)
@@ -134,7 +134,7 @@ system("stty raw");  /// No need for pressing 'enter' after every input.
             }
             else if (E1 < E2)
             {
-                duty2=-0.025;
+                duty2=+0.025;
                 rc_set_motor(motor_right, duty2);
             }
             else {
