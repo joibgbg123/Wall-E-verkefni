@@ -7,6 +7,7 @@
 // function declarations
 void Drive();
 void on_pause_released();
+void EncoderTest(int EncoderLeft, int EncoderRight, double duty_start);
 
 int main()
 {
@@ -33,11 +34,7 @@ int main()
 			rc_set_led(GREEN, ON);
 			rc_set_led(RED, OFF);
 
-			//E1 = rc_get_encoder_pos(encoder_left);
-            //E2 = -rc_get_encoder_pos(encoder_right);
-
 			Drive();
-
 		}
 
 		else if(rc_get_state()==PAUSED){
@@ -63,11 +60,12 @@ void Drive()
     double duty1 = duty_start;
     double duty2 = -duty_start;
 
-	/*/// Encoder definitions
+	/// Encoder definitions
 	int encoder_right = 2;
 	int encoder_left = 1;
-	int E1 = 0;
-	int E2 = 0;*/
+
+    int EncoderLeft = rc_get_encoder_pos(encoder_left);
+    int EncoderRight = -rc_get_encoder_pos(encoder_right);
 
     system("stty raw");  /// No need for pressing 'enter' after every input.
 
@@ -76,12 +74,15 @@ void Drive()
 
     switch(input){
         case 'w':
+            printf("| BAHAn EncoderLeft | EncoderRight |\n");
+            printf("| %i | %i |\n",EncoderLeft,EncoderRight);
+
             rc_set_motor(motor_left, duty1);
             rc_set_motor(motor_right, duty2);
 
             printf("Autobots! Roll out \n");
-            //printf("| E1 | E2 |\n");
-            //printf("| %i | %i |\n",-E1,E2);
+
+            EncoderTest(EncoderLeft, EncoderRight, duty_start);
             break;
 
         case 's':
@@ -122,6 +123,41 @@ void Drive()
             break;
 
     }
+}
+
+void EncoderTest(int EncoderLeft, int EncoderRight, double duty_start)
+{
+    /// Motor definitions
+    int motor_right = 2;
+    int motor_left = 1;
+
+    double duty1 = duty_start;
+    double duty2 = -duty_start;
+
+	/// Encoder definitions
+	int encoder_right = 2;
+	int encoder_left = 1;
+
+    while(EncoderLeft != EncoderRight){
+        printf("| EncoderLeft | EncoderRight |\n");
+        printf("| %i | %i |\n",EncoderLeft,EncoderRight);
+
+        if(EncoderLeft < EncoderRight){
+            rc_set_motor(motor_left, duty1 - 0.2);
+            rc_set_motor(motor_right, duty2 - 0.2);
+        }
+
+        if(EncoderLeft > EncoderRight){
+            rc_set_motor(motor_left, duty1 + 0.2);
+            rc_set_motor(motor_right, duty2 + 0.2);
+        }
+
+        EncoderLeft = rc_get_encoder_pos(encoder_left);
+        EncoderRight = -rc_get_encoder_pos(encoder_right);
+    }
+    rc_set_motor(motor_left, duty1);
+    rc_set_motor(motor_right, duty2);
+
 }
 
 void on_pause_released(){
