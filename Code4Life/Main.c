@@ -182,7 +182,6 @@ system("stty raw");  /// No need for pressing 'enter' after every input.
             rc_send_servo_pulse_us(4,1500);
             rc_send_servo_pulse_us(8,1500);
             printf("position 0°\n");
-            /// rc_usleep(1000000/frequency_hz);
             break;
 
         case 'n':
