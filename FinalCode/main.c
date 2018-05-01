@@ -33,8 +33,8 @@ int main()
 			rc_set_led(GREEN, ON);
 			rc_set_led(RED, OFF);
 
-			E1 = rc_get_encoder_pos(encoder_left);
-            E2 = -rc_get_encoder_pos(encoder_right);
+			//E1 = rc_get_encoder_pos(encoder_left);
+            //E2 = -rc_get_encoder_pos(encoder_right);
 
 			Drive();
 
@@ -48,7 +48,6 @@ int main()
 		// always sleep at some point
 		usleep(100000);
 	}
-
 	// exit cleanly
 	rc_cleanup();
     return 0;
@@ -64,11 +63,11 @@ void Drive()
     double duty1 = duty_start;
     double duty2 = -duty_start;
 
-	/// Encoder definitions
+	/*/// Encoder definitions
 	int encoder_right = 2;
 	int encoder_left = 1;
 	int E1 = 0;
-	int E2 = 0;
+	int E2 = 0;*/
 
     system("stty raw");  /// No need for pressing 'enter' after every input.
 
@@ -81,8 +80,8 @@ void Drive()
             rc_set_motor(motor_right, duty2);
 
             printf("Autobots! Roll out \n");
-            printf("| E1 | E2 |\n");
-            printf("| %i | %i |\n",-E1,E2);
+            //printf("| E1 | E2 |\n");
+            //printf("| %i | %i |\n",-E1,E2);
             break;
 
         case 's':
@@ -104,7 +103,6 @@ void Drive()
             break;
 
         case 'f': ///STOPPA
-            rc_set_state(PAUSED);
             rc_set_motor(motor_left, 0.0);
             rc_set_motor(motor_right, 0.0);
             printf("Paused mode on \n");
