@@ -115,32 +115,51 @@ system("stty raw");  /// No need for pressing 'enter' after every input.
             printf("| E1 | E2 |\n");
             printf("| %i | %i |\n",-E1,E2);
 
-            E1 = rc_get_encoder_pos(encoder_left);
-            E2 = -rc_get_encoder_pos(encoder_right);
 
-            if (E1 > E2 && duty2 < 0.8)
+
+            while(rc_get_state() != EXITING){
+
+                E1 = rc_get_encoder_pos(encoder_left);
+                E2 = -rc_get_encoder_pos(encoder_right);
+
+            if (E1 > E2 && duty2 < 0.6)
             {
-                duty2=-0.025;
+                duty2 -= 0.01;
                 rc_set_motor(motor_right, duty2);
+                printf("if1");
             }
-            else if (E1 < E2 && duty1 < 0.8)
+            else if (E1 < E2 && duty1 < 0.6)
             {
-                duty1=+0.025;
+                duty1 += 0.01;
                 rc_set_motor(motor_left, duty1);
+                printf("if2");
             }
             else if (E1 > E2)
             {
-                duty1=-0.025;
+                duty1 -= 0.01;
                 rc_set_motor(motor_left, duty1);
+                printf("if3");
             }
             else if (E1 < E2)
             {
-                duty2=+0.025;
+                duty2 += 0.01;
                 rc_set_motor(motor_right, duty2);
+                printf("if4");
             }
             else {
                 /// keep driving if they are the same
+                printf("if5");
             }
+            printf("| duty1 | duty2 | \n \r ");
+            printf("|  %2f  |  %2f  | \n \r ", duty1, duty2);
+
+            rc_usleep(500000);
+
+            if(E1 > 700){
+                break;
+            }
+
+            }/// her endar while lykkja
             break;
 
         case 's':
@@ -232,6 +251,7 @@ system("stty raw");  /// No need for pressing 'enter' after every input.
             rc_i2c_write_byte(1,0, 0xE4);
             break;
             */
+
 
 
         default:

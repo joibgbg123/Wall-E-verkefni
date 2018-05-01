@@ -17,7 +17,7 @@ int main()
 		return -1;
 	}
 
-	printf("\nDestroy all humans\n");
+	printf("\nDestroy all humans\n\r");
 
 	///All definitions & functions here below
 	rc_set_pause_released_func(&on_pause_released);
@@ -57,8 +57,8 @@ void Drive()
     int motor_left = 1;
 
     double duty_start = 0.4;
-    double duty1 = duty_start;
-    double duty2 = -duty_start;
+    double dutyLeft = duty_start;
+    double dutyRight = -duty_start;
 
 	/// Encoder definitions
 	int encoder_right = 2;
@@ -74,52 +74,52 @@ void Drive()
 
     switch(input){
         case 'w':
-            printf("| BAHAn EncoderLeft | EncoderRight |\n");
-            printf("| %i | %i |\n",EncoderLeft,EncoderRight);
+            printf("| BAHAn EncoderLeft | EncoderRight |\n\r");
+            printf("| %i | %i |\n\r",EncoderLeft,EncoderRight);
 
-            rc_set_motor(motor_left, duty1);
-            rc_set_motor(motor_right, duty2);
+            rc_set_motor(motor_left, dutyLeft);
+            rc_set_motor(motor_right, dutyRight);
 
-            printf("Autobots! Roll out \n");
+            printf("Autobots! Roll out \n\r");
 
             EncoderTest(EncoderLeft, EncoderRight, duty_start);
             break;
 
         case 's':
-            rc_set_motor(motor_left, -duty1);
-            rc_set_motor(motor_right, -duty2);
-            printf("Run Away!!! \n");
+            rc_set_motor(motor_left, -dutyLeft);
+            rc_set_motor(motor_right, -dutyRight);
+            printf("Run Away!!! \n\r");
             break;
 
         case 'a':
             rc_set_motor(motor_left, -duty_start/2);
             rc_set_motor(motor_right, -duty_start);
-            printf("vinstri beygja \n");
+            printf("vinstri beygja \n\r");
             break;
 
         case 'd':
             rc_set_motor(motor_left, duty_start);
             rc_set_motor(motor_right, duty_start/2);
-            printf("haegri beygja \n");
+            printf("haegri beygja \n\r");
             break;
 
         case 'f': ///STOPPA
             rc_set_motor(motor_left, 0.0);
             rc_set_motor(motor_right, 0.0);
-            printf("Paused mode on \n");
+            printf("Paused mode on \n\r");
             break;
 
         case 'q': /// Haetta
             rc_set_state(EXITING);
             rc_set_motor(motor_left, 0.0);
             rc_set_motor(motor_right, 0.0);
-            printf("Exiting program \n");
+            printf("Exiting program \n\r");
             break;
 
         default:
-            printf("WASD til ad hreyfast \n");
-            printf("f til ad stoppa en vera entha i running \n");
-            printf("q til ad fara i PAUSED og haetta \n");
+            printf("WASD til ad hreyfast \n\r");
+            printf("f til ad stoppa en vera entha i running \n\r");
+            printf("q til ad fara i PAUSED og haetta \n\r");
             break;
 
     }
@@ -131,32 +131,46 @@ void EncoderTest(int EncoderLeft, int EncoderRight, double duty_start)
     int motor_right = 2;
     int motor_left = 1;
 
-    double duty1 = duty_start;
-    double duty2 = -duty_start;
+    double dutyLeft = duty_start;
+    double dutyRight = -duty_start;
 
 	/// Encoder definitions
 	int encoder_right = 2;
 	int encoder_left = 1;
 
     while(EncoderLeft != EncoderRight){
-        printf("| EncoderLeft | EncoderRight |\n");
-        printf("| %i | %i |\n",EncoderLeft,EncoderRight);
+        printf("| Left | Right |\n\r");
+        printf("|  %i  |  %i  |\n\r",EncoderLeft,EncoderRight);
 
         if(EncoderLeft < EncoderRight){
-            rc_set_motor(motor_left, duty1 - 0.2);
-            rc_set_motor(motor_right, duty2 - 0.2);
+            rc_set_motor(motor_left, dutyLeft + 0.1);
+            rc_usleep(1000000); /// wait for 1.0 second
+            rc_set_motor(motor_left, dutyLeft );
+            // rc_set_motor(motor_right, dutyRight + 0.1);
+            printf("breytti left\n\r");
         }
 
         if(EncoderLeft > EncoderRight){
-            rc_set_motor(motor_left, duty1 + 0.2);
-            rc_set_motor(motor_right, duty2 + 0.2);
+            // rc_set_motor(motor_left, dutyLeft - 0.1);
+            rc_set_motor(motor_right, dutyRight - 0.1);
+            rc_usleep(1000000); /// wait for 1.0 second
+            rc_set_motor(motor_right, dutyRight );
+            printf("breytti right \n \r");
+
         }
+
+        rc_usleep(1000000); /// wait for 1.0 second
 
         EncoderLeft = rc_get_encoder_pos(encoder_left);
         EncoderRight = -rc_get_encoder_pos(encoder_right);
+
+        if(EncoderRight > 1000){
+
+            break;
+        }
     }
-    rc_set_motor(motor_left, duty1);
-    rc_set_motor(motor_right, duty2);
+    // rc_set_motor(motor_left, dutyLeft);
+    // rc_set_motor(motor_right, dutyRight);
 
 }
 
