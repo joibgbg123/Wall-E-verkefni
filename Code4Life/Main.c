@@ -22,6 +22,7 @@
 void on_pause_pressed();
 void on_pause_released();
 void Drive();
+int range(int hexAddress);
 
 
 /*******************************************************************************
@@ -190,6 +191,47 @@ system("stty raw");  /// No need for pressing 'enter' after every input.
             printf("position 60°\n");
             break;
 
+        case 'p':
+           /*
+            int length1 = range(0x70);
+            int length2 = range(0x72);
+            printf("------skynjarar------ \n \r");
+            printf("--------------------- \n \r");
+            printf("|skynjari1|skynjari2| \n \r");
+            printf("|  %i  |  %i  | \n \r", length1, length2);*/
+            rc_i2c_init(1,0x70);
+            uint8_t highByte;
+            uint8_t lowByte;
+            rc_i2c_write_byte(1, 0, 0x51);
+            rc_usleep(70000);
+            rc_i2c_read_byte(1,2, &highByte);
+            rc_i2c_read_byte(1,3, &lowByte);
+            int length1 = (highByte << 8) | lowByte;
+
+            rc_i2c_init(1,0x72);
+            //uint8_t highByte;
+            //uint8_t lowByte;
+            rc_i2c_write_byte(1, 0, 0x51);
+            rc_usleep(70000);
+            rc_i2c_read_byte(1,2, &highByte);
+            rc_i2c_read_byte(1,3, &lowByte);
+            int length2 = (highByte << 8) | lowByte;
+
+            printf("------skynjarar------ \n \r");
+            printf("--------------------- \n \r");
+            printf("|skynjari1|skynjari2| \n \r");
+            printf("|  %i  |  %i  | \n \r", length1, length2);
+            break;
+
+        /*
+        case 'l':
+            rc_i2c_init(1,0x70);
+            rc_i2c_write_byte(1,0, 0xA0);
+            rc_i2c_write_byte(1,0, 0xAA);
+            rc_i2c_write_byte(1,0, 0xA5);
+            rc_i2c_write_byte(1,0, 0xE4);
+            break;
+            */
 
 
         default:
@@ -204,6 +246,21 @@ system("stty raw");  /// No need for pressing 'enter' after every input.
 //rc_set_motor(2, 0.0);
 
 }
+
+/*
+int range(int hexAddress){
+    rc_i2c_init(1,address);
+    uint8_t highByte;
+    uint8_t lowByte;
+    rc_i2c_write_byte(1, 0, 0x51);
+    rc_usleep(70000);
+    rc_i2c_read_byte(1,2, &highByte);
+    rc_i2c_read_byte(1,3, &lowByte);
+    int length = (highByte << 8) | lowByte;
+
+    return length;
+
+}*/
 
 
 /*******************************************************************************
