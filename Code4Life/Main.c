@@ -84,11 +84,11 @@ void Drive()
     double duty1 = duty_start;
     double duty2 = -duty_start;
 
-    /* Never mind that one then
+
     /// Motor definitions
     int motor_right = 2;
     int motor_left = 1;
-    */
+
 
 	/// Encoder definitions
 	int encoder_right = 2;
