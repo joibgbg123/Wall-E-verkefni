@@ -4,12 +4,17 @@
 #include <rc_usefulincludes.h>
 #include <roboticscape.h>
 
-#define BASE_DUTY 0.4;
+#define BASE_DUTY 0.4
+#define ADJUSTMENT 0.01
+
+static volatile int Thread_switch = 1;
+static volatile char Turning_switch = 'w';
 
 // function declarations
 void Drive();
 void on_pause_released();
 void *encoderEntry(void *param);
+pthread_mutex_t lock;
 
 int main()
 {
@@ -29,11 +34,9 @@ int main()
 	rc_enable_motors();
 	rc_enable_servo_power_rail();
 
-///!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    /// ENABLE all Threads
 	pthread_t encoderThread; /// HERE2 !!!!!!!!!
-
 	pthread_create(&encoderThread, NULL, encoderEntry, NULL); /// HERE3 !!!!!!!!
-///!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     /// Keep looping until state changes to EXITING
 	while(rc_get_state()!=EXITING){
@@ -53,11 +56,11 @@ int main()
 		// always sleep at some point
 		usleep(100000);
 	}
-///!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-	pthread_join(encoderThread, NULL); /// HERE4 !!!
 
-	//int pthread_cancel(pthread_t encoderThread);
-///!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    ///Clean the Thread
+	//pthread_join(encoderThread, NULL); /// HERE4 !!!
+	int pthread_cancel(pthread_t encoderThread);
+
 	// exit cleanly
 	rc_cleanup();
     return 0;
@@ -83,9 +86,11 @@ void Drive()
     char input = getchar(); //user input
     printf("> ");
 
+    pthread_mutex_lock(&lock);
     switch(input){
         case 'w':
-            printf("| BAHAn EncoderLeft | EncoderRight |\n\r");
+            Turning_switch = 'w';
+            printf("| driveF: EncoderLeft | EncoderRight |\n\r");
             printf("| %i | %i |\n\r",EncoderLeft,EncoderRight);
 
             rc_set_motor(motor_left, dutyLeft);
@@ -94,30 +99,35 @@ void Drive()
             break;
 
         case 's':
+            Turning_switch = 'w'; //Thread
             rc_set_motor(motor_left, -dutyLeft);
             rc_set_motor(motor_right, -dutyRight);
             printf("Run Away!!! \n\r");
             break;
 
         case 'a':
+            Turning_switch = 'a'; //Thread
             rc_set_motor(motor_left, -dutyLeft/2);
             rc_set_motor(motor_right, -dutyRight);
             printf("vinstri beygja \n\r");
             break;
 
         case 'd':
+            Turning_switch = 'a'; //Thread
             rc_set_motor(motor_left, dutyLeft);
             rc_set_motor(motor_right, dutyRight/2);
             printf("haegri beygja \n\r");
             break;
 
         case 'f': ///STOPPA
+            Turning_switch = 'f'; //Thread
             rc_set_motor(motor_left, 0.0);
             rc_set_motor(motor_right, 0.0);
             printf("Paused mode on \n\r");
             break;
 
         case 'q': /// Haetta
+            Thread_switch = 0; //Thread
             rc_set_state(EXITING);
             rc_set_motor(motor_left, 0.0);
             rc_set_motor(motor_right, 0.0);
@@ -131,45 +141,58 @@ void Drive()
             break;
 
     }
+    pthread_mutex_unlock(&lock);
 }
 
 void *encoderEntry(void *param)
 {
-/// Motor definitions
+    /// Motor definitions
     int motor_right = 2;
     int motor_left = 1;
 
     double dutyLeft = BASE_DUTY;
     double dutyRight = -BASE_DUTY;
 
-	/// Encoder definitions
-    int EncoderLeft = rc_get_encoder_pos(motor_left);
-    int EncoderRight = -rc_get_encoder_pos(motor_right);
+    while(Thread_switch == 1){
 
-    //while(EncoderLeft != EncoderRight){
-        printf("| Left | Right |\n\r");
-        printf("|  %i  |  %i  |\n\r",EncoderLeft,EncoderRight);
+        /// Encoder definitions
+        int EncoderLeft = rc_get_encoder_pos(motor_left);
+        int EncoderRight = -rc_get_encoder_pos(motor_right);
 
-        if(EncoderLeft < EncoderRight){
-            rc_set_motor(motor_left, dutyLeft + 0.2);
-            //rc_set_motor(motor_right, dutyRight - 0.2);
-            printf("+0.2 Left\n\r");
-        }
-        else if(EncoderLeft > EncoderRight){
-            //rc_set_motor(motor_left, dutyLeft + 0.2);
-            rc_set_motor(motor_right, dutyRight - 0.2);
-            printf("-0.2 Right\n\r");
-        }
-        else{
-            rc_set_motor(motor_left, dutyLeft);
-            rc_set_motor(motor_right, dutyRight);
-            printf("Equal\n\r");
+        if(Turning_switch == 'w'){
+            printf("| Left | Right |\n\r");
+            printf("|  %i  |  %i  |\n\r",EncoderLeft,EncoderRight);
+            printf("|  %f  |  %f  |\n\r",dutyLeft,dutyRight);
+
+            if(EncoderLeft < EncoderRight){
+                rc_set_motor(motor_right, dutyRight += ADJUSTMENT);
+                printf("+0.01 Left\n\r");
+            }
+            else if(EncoderLeft > EncoderRight){
+                rc_set_motor(motor_right, dutyRight -= ADJUSTMENT);
+                printf("-0.01 Right\n\r");
+            }
         }
 
-        rc_usleep(500000); /// wait for 0.5 second
+        else if(Turning_switch == 'a'){
+            rc_set_encoder_pos(motor_left, 0);
+            rc_set_encoder_pos(motor_right, 0);
+
+            printf("| Left | Right |\n\r");
+            printf("|  %i  |  %i  |\n\r",EncoderLeft,EncoderRight);
+        }
+
+        else if(Turning_switch == 'f'){
+            usleep(10000000); /// wait for 10 second
+            printf("Im on a break\n\r");
+        }
+
+
+        rc_usleep(800000); /// wait for 0.8 second
+    }
 
     return NULL;
-} ///HERE!!!!!!!!
+}
 
 void on_pause_released(){
 	// toggle betewen paused and running modes
