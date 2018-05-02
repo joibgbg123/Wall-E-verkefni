@@ -57,13 +57,12 @@ void Drive()
     int motor_left = 1;
 
     double duty_start = 0.4;
-    double duty1 = duty_start;
-    double duty2 = -duty_start;
+    double dutyLeft = duty_start;
+    double dutyRight = -duty_start;
 
 	/// Encoder definitions
 	int encoder_right = 2;
 	int encoder_left = 1;
-
     int EncoderLeft = rc_get_encoder_pos(encoder_left);
     int EncoderRight = -rc_get_encoder_pos(encoder_right);
 
@@ -77,8 +76,8 @@ void Drive()
             printf("| BAHAn EncoderLeft | EncoderRight |\n");
             printf("| %i | %i |\n",EncoderLeft,EncoderRight);
 
-            rc_set_motor(motor_left, duty1);
-            rc_set_motor(motor_right, duty2);
+            rc_set_motor(motor_left, dutyLeft);
+            rc_set_motor(motor_right, dutyRight);
 
             printf("Autobots! Roll out \n");
 
@@ -86,8 +85,8 @@ void Drive()
             break;
 
         case 's':
-            rc_set_motor(motor_left, -duty1);
-            rc_set_motor(motor_right, -duty2);
+            rc_set_motor(motor_left, -dutyLeft);
+            rc_set_motor(motor_right, -dutyRight);
             printf("Run Away!!! \n");
             break;
 
@@ -131,8 +130,8 @@ void EncoderTest(int EncoderLeft, int EncoderRight, double duty_start)
     int motor_right = 2;
     int motor_left = 1;
 
-    double duty1 = duty_start;
-    double duty2 = -duty_start;
+    double dutyLeft = duty_start;
+    double dutyRight = -duty_start;
 
 	/// Encoder definitions
 	int encoder_right = 2;
@@ -143,20 +142,20 @@ void EncoderTest(int EncoderLeft, int EncoderRight, double duty_start)
         printf("| %i | %i |\n",EncoderLeft,EncoderRight);
 
         if(EncoderLeft < EncoderRight){
-            rc_set_motor(motor_left, duty1 - 0.2);
-            rc_set_motor(motor_right, duty2 - 0.2);
+            rc_set_motor(motor_left, dutyLeft - 0.2);
+            rc_set_motor(motor_right, dutyRight - 0.2);
         }
 
         if(EncoderLeft > EncoderRight){
-            rc_set_motor(motor_left, duty1 + 0.2);
-            rc_set_motor(motor_right, duty2 + 0.2);
+            rc_set_motor(motor_left, dutyLeft + 0.2);
+            rc_set_motor(motor_right, dutyRight + 0.2);
         }
 
         EncoderLeft = rc_get_encoder_pos(encoder_left);
         EncoderRight = -rc_get_encoder_pos(encoder_right);
     }
-    rc_set_motor(motor_left, duty1);
-    rc_set_motor(motor_right, duty2);
+    rc_set_motor(motor_left, dutyLeft);
+    rc_set_motor(motor_right, dutyRight);
 
 }
 
