@@ -16,7 +16,12 @@
 #include <stdlib.h> // for atoi
 #include <getopt.h>
 
+#include <pthread.h>
 
+
+//static volatile double duty_start = 0.4;
+
+#define BASE_DUTY 0.4;
 
 // function declarations
 void on_pause_pressed();
@@ -24,15 +29,62 @@ void on_pause_released();
 void Drive();
 int range(int hexAddress);
 
+///!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+void *encoderEntry(void *param)
+{
+    double duty_start = BASE_DUTY;
 
-/*******************************************************************************
-* int main()
-*
-* This template main function contains these critical components
-* - call to rc_initialize() at the beginning
-* - main while loop that checks for EXITING condition
-* - rc_cleanup() at the end
-*******************************************************************************/
+/// Motor definitions
+    int motor_right = 2;
+    int motor_left = 1;
+
+    double dutyLeft = duty_start;
+    double dutyRight = -duty_start;
+
+	/// Encoder definitions
+    int EncoderLeft = rc_get_encoder_pos(motor_left);
+    int EncoderRight = -rc_get_encoder_pos(motor_right);
+
+    //while(EncoderLeft != EncoderRight){
+        printf("| Left | Right |\n\r");
+        printf("|  %i  |  %i  |\n\r",EncoderLeft,EncoderRight);
+
+        if(EncoderLeft < EncoderRight){
+            rc_set_motor(motor_left, dutyLeft + 0.2);
+            //rc_set_motor(motor_right, dutyRight - 0.2);
+            printf("+0.2 Left");
+        }
+        else if(EncoderLeft > EncoderRight){
+            //rc_set_motor(motor_left, dutyLeft + 0.2);
+            rc_set_motor(motor_right, dutyRight - 0.2);
+            printf("-0.2 Right");
+        }
+        else{
+            rc_set_motor(motor_left, dutyLeft);
+            rc_set_motor(motor_right, dutyRight);
+            printf("Equal");
+        }
+
+        rc_usleep(500000); /// wait for 0.5 second
+
+    //}
+
+
+    /*
+    int *value;
+    value = (int*)param;
+
+    int i = 0;
+    while(i < value ){
+        usleep(1);
+        printf("Final Countdown %i\n", i);
+        ++i;
+    }
+
+    return NULL;*/
+} ///HERE!!!!!!!!
+///!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
 int main(){
 	// always initialize cape library first
 	if(rc_initialize()){
@@ -42,6 +94,7 @@ int main(){
 
 	// do your own initialization here
 	printf("\nHello BeagleBone\n");
+	printf("\nTRY ME\n");
 	rc_set_pause_pressed_func(&on_pause_pressed);
 	rc_set_pause_released_func(&on_pause_released);
 
@@ -52,7 +105,14 @@ int main(){
 	rc_enable_motors();
 	rc_enable_servo_power_rail();
 
+///!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
+	pthread_t encoderThread; /// HERE2 !!!!!!!!!
+
+    //int bull = 20;
+	pthread_create(&encoderThread, NULL, encoderEntry, NULL); /// HERE3 !!!!!!!!
+
+///!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 	// Keep looping until state changes to EXITING
 	while(rc_get_state()!=EXITING){
@@ -62,6 +122,7 @@ int main(){
 			rc_set_led(GREEN, ON);
 			rc_set_led(RED, OFF);
 			Drive();
+			usleep(1);
 		}
 		else if(rc_get_state()==PAUSED){
 			// do other things
@@ -72,6 +133,11 @@ int main(){
 		usleep(100000);
 	}
 
+///!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	pthread_join(encoderThread, NULL); /// HERE4 !!!
+
+	int pthread_cancel(pthread_t encoderThread);
+///!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	// exit cleanly
 	rc_cleanup();
 	return 0;
@@ -81,7 +147,7 @@ int main(){
 void Drive()
 {
 
-    double duty_start = 0.4;
+    double duty_start = BASE_DUTY
     double duty1 = duty_start;
     double duty2 = -duty_start;
 
@@ -100,7 +166,6 @@ void Drive()
 
 system("stty raw");  /// No need for pressing 'enter' after every input.
 
-
 //char input;
 //do{
     char input = getchar();
@@ -118,30 +183,49 @@ system("stty raw");  /// No need for pressing 'enter' after every input.
             E1 = rc_get_encoder_pos(encoder_left);
             E2 = -rc_get_encoder_pos(encoder_right);
 
-            if (E1 > E2 && duty2 < 0.8)
+
+/*
+            while(rc_get_state() != EXITING){
+
+            if (E1 > E2 && duty2 < 0.6)
             {
-                duty2=-0.025;
+                duty2 -= 0.01;
                 rc_set_motor(motor_right, duty2);
+                printf("if1");
             }
-            else if (E1 < E2 && duty1 < 0.8)
+            else if (E1 < E2 && duty1 < 0.6)
             {
-                duty1=+0.025;
+                duty1 += 0.01;
                 rc_set_motor(motor_left, duty1);
+                printf("if2");
             }
             else if (E1 > E2)
             {
-                duty1=-0.025;
+                duty1 -= 0.01;
                 rc_set_motor(motor_left, duty1);
+                printf("if3");
             }
             else if (E1 < E2)
             {
-                duty2=+0.025;
+                duty2 += 0.01;
                 rc_set_motor(motor_right, duty2);
+                printf("if4");
             }
             else {
                 /// keep driving if they are the same
+                printf("if5");
             }
-            break;
+            printf("| duty1 | duty2 | \n \r ");
+            printf("|  %2f  |  %2f  | \n \r ", duty1, duty2);
+
+            rc_usleep(500000);
+
+            if(E1 > 700){
+                break;
+            }
+
+            }/// her endar while lykkja
+            break;*/
 
         case 's':
             rc_set_motor(motor_left, -duty1);
@@ -232,6 +316,7 @@ system("stty raw");  /// No need for pressing 'enter' after every input.
             rc_i2c_write_byte(1,0, 0xE4);
             break;
             */
+
 
 
         default:

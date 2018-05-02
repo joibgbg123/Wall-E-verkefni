@@ -1,0 +1,5 @@
+# depslib dependency file v1.0
+1525261007 source:c:\users\hilma\desktop\róbotar\wall-e-verkefni\test\main.c
+	<pthread.h>
+	<stdio.h>
+
