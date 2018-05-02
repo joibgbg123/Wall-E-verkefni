@@ -34,9 +34,9 @@ int main()
 	rc_enable_motors();
 	rc_enable_servo_power_rail();
 
-    /// ENABLE all Threads
+ /*   /// ENABLE all Threads
 	pthread_t encoderThread; /// HERE2 !!!!!!!!!
-	pthread_create(&encoderThread, NULL, encoderEntry, NULL); /// HERE3 !!!!!!!!
+	pthread_create(&encoderThread, NULL, encoderEntry, NULL); /// HERE3 !!!!!!!!*/
 
     /// Keep looping until state changes to EXITING
 	while(rc_get_state()!=EXITING){
@@ -57,9 +57,9 @@ int main()
 		usleep(100000);
 	}
 
-    ///Clean the Thread
+  /*  ///Clean the Thread
 	//pthread_join(encoderThread, NULL); /// HERE4 !!!
-	int pthread_cancel(pthread_t encoderThread);
+	int pthread_cancel(pthread_t encoderThread);*/
 
 	// exit cleanly
 	rc_cleanup();
@@ -93,14 +93,14 @@ void Drive()
             printf("| driveF: EncoderLeft | EncoderRight |\n\r");
             printf("| %i | %i |\n\r",EncoderLeft,EncoderRight);
 
-            rc_set_motor(motor_left, dutyLeft);
+            rc_set_motor(motor_left, dutyLeft + 0.045); ///HARDCODE HERE FOR STRAIGHT
             rc_set_motor(motor_right, dutyRight);
             printf("Autobots! Roll out \n\r");
             break;
 
         case 's':
             Turning_switch = 'w'; //Thread
-            rc_set_motor(motor_left, -dutyLeft);
+            rc_set_motor(motor_left, -dutyLeft - 0.030);
             rc_set_motor(motor_right, -dutyRight);
             printf("Run Away!!! \n\r");
             break;
@@ -108,14 +108,14 @@ void Drive()
         case 'a':
             Turning_switch = 'a'; //Thread
             rc_set_motor(motor_left, -dutyLeft/2);
-            rc_set_motor(motor_right, -dutyRight);
+            rc_set_motor(motor_right, dutyRight);
             printf("vinstri beygja \n\r");
             break;
 
         case 'd':
             Turning_switch = 'a'; //Thread
             rc_set_motor(motor_left, dutyLeft);
-            rc_set_motor(motor_right, dutyRight/2);
+            rc_set_motor(motor_right, -dutyRight/2);
             printf("haegri beygja \n\r");
             break;
 
