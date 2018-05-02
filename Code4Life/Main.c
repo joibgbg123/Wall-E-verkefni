@@ -22,7 +22,7 @@
 void on_pause_pressed();
 void on_pause_released();
 void Drive();
-int range(int hexAddress);
+void servo(int channel, int pulse); /// fall til þess að keyra 3 púlsa á servoa
 
 
 /*******************************************************************************
@@ -122,27 +122,27 @@ system("stty raw");  /// No need for pressing 'enter' after every input.
                 E1 = rc_get_encoder_pos(encoder_left);
                 E2 = -rc_get_encoder_pos(encoder_right);
 
-            if (E1 > E2 && duty2 < 0.6)
+            if (E1 > E2 && duty2 < 0.5)
             {
-                duty2 -= 0.01;
+                duty2 -= 0.005;
                 rc_set_motor(motor_right, duty2);
                 printf("if1");
             }
-            else if (E1 < E2 && duty1 < 0.6)
+            else if (E1 < E2 && duty1 < 0.5)
             {
-                duty1 += 0.01;
+                duty1 += 0.005;
                 rc_set_motor(motor_left, duty1);
                 printf("if2");
             }
             else if (E1 > E2)
             {
-                duty1 -= 0.01;
+                duty1 -= 0.005;
                 rc_set_motor(motor_left, duty1);
                 printf("if3");
             }
             else if (E1 < E2)
             {
-                duty2 += 0.01;
+                duty2 += 0.005;
                 rc_set_motor(motor_right, duty2);
                 printf("if4");
             }
@@ -195,18 +195,18 @@ system("stty raw");  /// No need for pressing 'enter' after every input.
             rc_set_motor(motor_right, 0.0);
             rc_disable_servo_power_rail();
 
-            printf("Settur í PAUSED MODE \n");
+            rc_set_state(EXITING);
             break;
 
         case 'b':
-            rc_send_servo_pulse_us(4,1500);
-            rc_send_servo_pulse_us(8,1500);
+            servo(6,1500); /// void servo(int channel,int pulse) 1500=0°
+            servo(8,1500);
             printf("position 0°\n");
             break;
 
         case 'n':
-            rc_send_servo_pulse_us(4,2100);
-            rc_send_servo_pulse_us(8,2100);
+            servo(6,2100); /// 2100=60°
+            servo(8,2100);
             printf("position 60°\n");
             break;
 
@@ -267,20 +267,13 @@ system("stty raw");  /// No need for pressing 'enter' after every input.
 
 }
 
-/*
-int range(int hexAddress){
-    rc_i2c_init(1,address);
-    uint8_t highByte;
-    uint8_t lowByte;
-    rc_i2c_write_byte(1, 0, 0x51);
-    rc_usleep(70000);
-    rc_i2c_read_byte(1,2, &highByte);
-    rc_i2c_read_byte(1,3, &lowByte);
-    int length = (highByte << 8) | lowByte;
-
-    return length;
-
-}*/
+void servo(int channel, int pulse){
+    int i;
+    for(i = 0; i < 3;i++){
+        rc_send_servo_pulse_us(channel,pulse); /// pulse 1500 = 0°, pulse 2100 = 60°
+            rc_usleep(1000000/50);
+    }
+}
 
 
 /*******************************************************************************
