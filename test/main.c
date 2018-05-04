@@ -1,9 +1,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <vlc/vlc.h>
+#include <roboticscape.h>
 
-int main(int argc, char **argv)
-{
+int main(int argc, char **argv){
+
+    rc_enable_servo_power_rail();
+
     libvlc_instance_t *inst;
     libvlc_media_player_t *mp;
     libvlc_media_t *m;
@@ -33,6 +36,8 @@ int main(int argc, char **argv)
     libvlc_media_player_release(mp);
 
     libvlc_release(inst);
+
+    rc_cleanup();
 
 
     return 0;
