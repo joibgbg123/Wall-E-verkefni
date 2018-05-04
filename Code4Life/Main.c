@@ -18,6 +18,7 @@
 
 #include <pthread.h>
 
+#include mpg123.h
 
 //static volatile double duty_start = 0.4;
 

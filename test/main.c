@@ -1,40 +1,39 @@
-#include <pthread.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <vlc/vlc.h>
 
-/* This is our thread function.  It is like main(), but for a thread*/
-void *threadFunc(void *arg)
+int main(int argc, char **argv)
 {
-	char *str;
-	int i = 0;
+    libvlc_instance_t *inst;
+    libvlc_media_player_t *mp;
+    libvlc_media_t *m;
 
-	str=(char*)arg;
+    // load the vlc engine
+    inst = libvlc_new(0, NULL);
 
-	while(i < 110 )
-	{
-		usleep(1);
-		printf("threadFunc says: %s\n",str);
-		++i;
-	}
+    // create a new item
+    //m = libvlc_media_new_path(inst, "/home/debian/sound/walle3.mp3");
+    m = libvlc_media_new_path(inst, "walle3.mp3");
 
-	return NULL;
-}
+    // create a media play playing environment
+    mp = libvlc_media_player_new_from_media(m);
 
-int main(void)
-{
-	pthread_t pth;	// this is our thread identifier
-	int i = 0;
+    // no need to keep the media now
+    libvlc_media_release(m);
 
-	pthread_create(&pth,NULL,threadFunc,"JOHANNES");
+    // play the media_player
+    libvlc_media_player_play(mp);
 
-	while(i < 100)
-	{
-		usleep(1);
-		printf("main is running...\n");
-		++i;
-	}
+    sleep(100);//play the audio 100s
 
-	printf("main waiting for thread to terminate...\n");
-	pthread_join(pth,NULL);
+    // stop playing
+    libvlc_media_player_stop(mp);
 
-	return 0;
+    // free the media_player
+    libvlc_media_player_release(mp);
+
+    libvlc_release(inst);
+
+
+    return 0;
 }

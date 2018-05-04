@@ -7,14 +7,23 @@
 #define BASE_DUTY 0.4
 #define ADJUSTMENT 0.01
 
-static volatile int Thread_switch = 1;
-static volatile char Turning_switch = 'w';
+#define motor_right 2
+#define motor_left 1
 
-// function declarations
+static volatile int Thread_switch = 1;
+static volatile char encoder_switch = 'w';
+//static volatile char drivingSwitch = 'w'; ///MAYBE
+
+/// function declarations
 void Drive();
-void on_pause_released();
-void *encoderEntry(void *param);
-pthread_mutex_t lock;
+void selfDrive();
+void on_pause_released(); //pause button
+void on_pause_pressed(); //pause button 2
+void *encoderEntry(void *param); //thread for encoders
+pthread_mutex_t lock; //lock for threads and globals
+void *sensors(void *param); //thread for sensors
+int i2c_1(); //sensor 1
+int i2c_2(); // sensor 2
 
 int main()
 {
@@ -27,6 +36,7 @@ int main()
 	printf("\nDestroy all humans\n\r");
 
 	///All definitions & functions here below
+	rc_set_pause_pressed_func(&on_pause_pressed);
 	rc_set_pause_released_func(&on_pause_released);
 	rc_set_state(RUNNING);
 
@@ -38,6 +48,9 @@ int main()
 	pthread_t encoderThread; /// HERE2 !!!!!!!!!
 	pthread_create(&encoderThread, NULL, encoderEntry, NULL); /// HERE3 !!!!!!!!*/
 
+	pthread_t sensorThread; /// HERE2 !!!!!!!!!
+	pthread_create(&sensorThread, NULL, sensors, NULL);
+
     /// Keep looping until state changes to EXITING
 	while(rc_get_state()!=EXITING){
 
@@ -45,13 +58,18 @@ int main()
 			rc_set_led(GREEN, ON);
 			rc_set_led(RED, OFF);
 
-			Drive();
+			//Drive();
+			selfDrive();
 		}
 
 		else if(rc_get_state()==PAUSED){
 
 			rc_set_led(GREEN, OFF);
 			rc_set_led(RED, ON);
+
+			rc_set_motor(motor_left, 0.0);
+            rc_set_motor(motor_right, 0.0);
+            printf("Paused mode on \n\r");
 		}
 		// always sleep at some point
 		usleep(100000);
@@ -61,6 +79,8 @@ int main()
 	//pthread_join(encoderThread, NULL); /// HERE4 !!!
 	int pthread_cancel(pthread_t encoderThread);*/
 
+	int pthread_cancel(pthread_t sensorThread);
+
 	// exit cleanly
 	rc_cleanup();
     return 0;
@@ -69,17 +89,12 @@ int main()
 void Drive()
 {
     /// Motor definitions
-    int motor_right = 2;
-    int motor_left = 1;
-
     double dutyLeft = BASE_DUTY;
     double dutyRight = -BASE_DUTY;
 
 	/// Encoder definitions
-	int encoder_right = 2;
-	int encoder_left = 1;
-    int EncoderLeft = rc_get_encoder_pos(encoder_left);
-    int EncoderRight = -rc_get_encoder_pos(encoder_right);
+    int EncoderLeft = rc_get_encoder_pos(motor_left);
+    int EncoderRight = -rc_get_encoder_pos(motor_right);
 
     system("stty raw");  /// No need for pressing 'enter' after every input.
 
@@ -89,7 +104,7 @@ void Drive()
     pthread_mutex_lock(&lock);
     switch(input){
         case 'w':
-            Turning_switch = 'w';
+            encoder_switch = 'w';
             printf("| driveF: EncoderLeft | EncoderRight |\n\r");
             printf("| %i | %i |\n\r",EncoderLeft,EncoderRight);
 
@@ -99,28 +114,28 @@ void Drive()
             break;
 
         case 's':
-            Turning_switch = 'w'; //Thread
+            encoder_switch = 'w'; //Thread
             rc_set_motor(motor_left, -dutyLeft - 0.030);
             rc_set_motor(motor_right, -dutyRight);
             printf("Run Away!!! \n\r");
             break;
 
         case 'a':
-            Turning_switch = 'a'; //Thread
+            encoder_switch = 'a'; //Thread
             rc_set_motor(motor_left, -dutyLeft/2);
             rc_set_motor(motor_right, dutyRight);
             printf("vinstri beygja \n\r");
             break;
 
         case 'd':
-            Turning_switch = 'a'; //Thread
+            encoder_switch = 'a'; //Thread
             rc_set_motor(motor_left, dutyLeft);
             rc_set_motor(motor_right, -dutyRight/2);
             printf("haegri beygja \n\r");
             break;
 
         case 'f': ///STOPPA
-            Turning_switch = 'f'; //Thread
+            encoder_switch = 'f'; //Thread
             rc_set_motor(motor_left, 0.0);
             rc_set_motor(motor_right, 0.0);
             printf("Paused mode on \n\r");
@@ -144,12 +159,54 @@ void Drive()
     pthread_mutex_unlock(&lock);
 }
 
+void selfDrive()
+{
+    /// Motor definitions
+    double dutyLeft = BASE_DUTY;
+    double dutyRight = -BASE_DUTY;
+
+    if(encoder_switch == 'w'){
+
+        //encoder_switch = 'w';
+        rc_set_motor(motor_left, dutyLeft + 0.045); ///HARDCODE HERE FOR STRAIGHT
+        rc_set_motor(motor_right, dutyRight);
+
+  /*      int i=0;
+        int z = 0;
+        for(i = 0; i < 40; i++){
+            rc_set_motor(motor_left, z);
+            rc_set_motor(motor_right, z);
+            z = z + 0.1;
+        }*/
+        printf("Autobots! Roll out \n\r");
+    }
+    else if(encoder_switch == 's'){
+
+        //encoder_switch = 'w'; //Thread
+        rc_set_motor(motor_left, -dutyLeft - 0.030); ///HARDCODE HERE FOR STRAIGHT
+        rc_set_motor(motor_right, -dutyRight);
+        printf("Run Away!!! \n\r");
+    }
+    else if(encoder_switch == 'a'){
+
+        //encoder_switch = 'a'; //Thread
+        rc_set_motor(motor_left, -dutyLeft/2);
+        rc_set_motor(motor_right, dutyRight);
+        printf("vinstri beygja \n\r");
+    }
+    else if(encoder_switch == 'd'){
+
+        //encoder_switch = 'a'; //Thread
+        rc_set_motor(motor_left, dutyLeft);
+        rc_set_motor(motor_right, -dutyRight/2);
+        printf("haegri beygja \n\r");
+    }
+
+}
+
 void *encoderEntry(void *param)
 {
     /// Motor definitions
-    int motor_right = 2;
-    int motor_left = 1;
-
     double dutyLeft = BASE_DUTY;
     double dutyRight = -BASE_DUTY;
 
@@ -159,7 +216,7 @@ void *encoderEntry(void *param)
         int EncoderLeft = rc_get_encoder_pos(motor_left);
         int EncoderRight = -rc_get_encoder_pos(motor_right);
 
-        if(Turning_switch == 'w'){
+        if(encoder_switch == 'w' || encoder_switch == 's'){
             printf("| Left | Right |\n\r");
             printf("|  %i  |  %i  |\n\r",EncoderLeft,EncoderRight);
             printf("|  %f  |  %f  |\n\r",dutyLeft,dutyRight);
@@ -174,7 +231,7 @@ void *encoderEntry(void *param)
             }
         }
 
-        else if(Turning_switch == 'a'){
+        else if(encoder_switch == 'a' || encoder_switch == 'd'){
             rc_set_encoder_pos(motor_left, 0);
             rc_set_encoder_pos(motor_right, 0);
 
@@ -182,11 +239,10 @@ void *encoderEntry(void *param)
             printf("|  %i  |  %i  |\n\r",EncoderLeft,EncoderRight);
         }
 
-        else if(Turning_switch == 'f'){
+        else if(encoder_switch == 'f'){
             usleep(10000000); /// wait for 10 second
             printf("Im on a break\n\r");
         }
-
 
         rc_usleep(800000); /// wait for 0.8 second
     }
@@ -194,9 +250,89 @@ void *encoderEntry(void *param)
     return NULL;
 }
 
-void on_pause_released(){
+void on_pause_released()
+{
 	// toggle betewen paused and running modes
 	if(rc_get_state()==RUNNING)		rc_set_state(PAUSED);
 	else if(rc_get_state()==PAUSED)	rc_set_state(RUNNING);
 	return;
 }
+
+void on_pause_pressed()
+{
+	int i=0;
+	const int samples = 100;	// check for release 100 times in this period
+	const int us_wait = 2000000; // 2 seconds
+
+	// now keep checking to see if the button is still held down
+	for(i=0;i<samples;i++){
+		rc_usleep(us_wait/samples);
+		if(rc_get_pause_button() == RELEASED) return;
+	}
+	printf("long press detected, shutting down\n");
+	rc_set_state(EXITING);
+	return;
+}
+
+void *sensors(void *param)
+{
+    while(Thread_switch == 1){
+
+        int length1 = i2c_1();
+        int length2 = i2c_2();
+
+        printf("------skynjarar------ \n \r");
+        printf("--------------------- \n \r");
+        printf("|skynjari1|skynjari2| \n \r");
+        printf("|  %i  |  %i  | \n \r", length1, length2);
+
+        usleep(100000); /// wait for 0.1 second
+
+        pthread_mutex_lock(&lock); ///LOCK IT
+        if(length1 <= 40 || length2 <= 40){
+            encoder_switch = 's';
+
+            usleep(1000000); /// wait for 1 second
+
+            encoder_switch = 'a';
+
+            usleep(1000000); /// wait for 1 second
+
+            encoder_switch = 'w';
+        }
+        pthread_mutex_unlock(&lock); ///UNLOCK IT
+
+    }
+
+    return NULL;
+}
+
+int i2c_1()
+{
+    rc_i2c_init(1,0x70);
+    uint8_t highByte;
+    uint8_t lowByte;
+    rc_i2c_write_byte(1, 0, 0x51);
+    rc_usleep(70000);
+    rc_i2c_read_byte(1,2, &highByte);
+    rc_i2c_read_byte(1,3, &lowByte);
+    int length1 = (highByte << 8) | lowByte;
+
+    return length1;
+}
+
+int i2c_2()
+{
+    rc_i2c_init(1,0x72);
+    uint8_t highByte;
+    uint8_t lowByte;
+    rc_i2c_write_byte(1, 0, 0x51);
+    rc_usleep(70000);
+    rc_i2c_read_byte(1,2, &highByte);
+    rc_i2c_read_byte(1,3, &lowByte);
+    int length2 = (highByte << 8) | lowByte;
+
+    return length2;
+}
+
+
