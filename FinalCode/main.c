@@ -30,8 +30,7 @@ int i2c_1(); //sensor 1
 int i2c_2(); // sensor 2
 
 void startSlow(); // start slow and go easy on the dc motors
-void servo(int channel, int pulse);
-void servo_look();
+void servo(int degrees);
 
 
 int main()
@@ -53,8 +52,8 @@ int main()
 	rc_enable_motors();
 	rc_enable_servo_power_rail();
 
-	servo(SERVO_CH_LEFT,1500);
-	servo(SERVO_CH_RIGHT,1500);
+	servo(0);
+	servo(0);
 
 
  /*   /// ENABLE all Threads
@@ -299,11 +298,11 @@ void *sensors(void *param)
         if(length1 <= 40 || length2 <= 40){
             encoder_switch = 's';
 
-            //usleep(1000000); /// wait for 1 second
+            servo(60);
+
+            usleep(500000); /// wait for 0.5 second
 
             //encoder_switch = 'a';
-
-            servo_look();
 
             if (length1 > length2){
 
@@ -313,6 +312,7 @@ void *sensors(void *param)
             else {
                 encoder_switch = 'a';
             }
+            servo(0);
 
             usleep(1000000); /// wait for 1 second
 
@@ -387,20 +387,15 @@ void startSlow()
     }
 }
 
-void servo(int channel, int pulse){
+void servo(int degrees){
     int i;
-    for(i = 0; i < 3;i++){
-        rc_send_servo_pulse_us(channel,pulse); /// pulse 1500 = 0°, pulse 2100 = 60°
+    /// 1500 eru 0° og svo margfalda ° með 10 og bæta við fyrir rangsælis og draga frá fyrir réttsælis;
+    for(i = 0; i < 10;i++){
+        rc_send_servo_pulse_us(SERVO_CH_LEFT, 1500+degrees*10); /// pulse 1500 = 0°, pulse 2100 = 60°
+        rc_send_servo_pulse_us(SERVO_CH_RIGHT, 1500-degrees*10);
             rc_usleep(1000000/50);
     }
 }
 
-void servo_look(){
 
-    /// 1500 eru 0° og svo margfalda ° með 10 og bæta við fyrir réttsælis og draga frá fyrir rangsælis;
-    servo(SERVO_CH_LEFT,2300);
-    servo(SERVO_CH_RIGHT,700);
-    usleep(70000);
-
-}
 

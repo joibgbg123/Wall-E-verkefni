@@ -18,17 +18,19 @@
 
 #include <pthread.h>
 
-#include mpg123.h
+/// #include <mpg123>
 
 //static volatile double duty_start = 0.4;
 
 #define BASE_DUTY 0.4;
+#define SERVO_CH_LEFT 8
+#define SERVO_CH_RIGHT 6
 
 // function declarations
 void on_pause_pressed();
 void on_pause_released();
 void Drive();
-void servo(int channel, int pulse); /// fall til þess að keyra 3 púlsa á servoa
+void servo(int degrees); /// fall til þess að keyra nokkra púlsa á servoa
 
 ///!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 void *encoderEntry(void *param)
@@ -106,12 +108,15 @@ int main(){
 	rc_enable_motors();
 	rc_enable_servo_power_rail();
 
+	 servo(0);
+	 servo(0);
+
 ///!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-	pthread_t encoderThread; /// HERE2 !!!!!!!!!
+	//pthread_t encoderThread; /// HERE2 !!!!!!!!!
 
     //int bull = 20;
-	pthread_create(&encoderThread, NULL, encoderEntry, NULL); /// HERE3 !!!!!!!!
+	//pthread_create(&encoderThread, NULL, encoderEntry, NULL); /// HERE3 !!!!!!!!
 
 ///!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
@@ -135,9 +140,9 @@ int main(){
 	}
 
 ///!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-	pthread_join(encoderThread, NULL); /// HERE4 !!!
+	//pthread_join(encoderThread, NULL); /// HERE4 !!!
 
-	int pthread_cancel(pthread_t encoderThread);
+	//int pthread_cancel(pthread_t encoderThread);
 ///!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	// exit cleanly
 	rc_cleanup();
@@ -272,15 +277,21 @@ system("stty raw");  /// No need for pressing 'enter' after every input.
             break;
 
         case 'b':
-            servo(6,1500); /// void servo(int channel,int pulse) 1500=0°
-            servo(8,1500);
-            printf("position 0°\n");
+            //servo(6,1500); /// void servo(int channel,int pulse) 1500=0°
+            //servo(8,1500);
+            printf("position 0°\n\r");
+            //servo(6,1500); /// void servo(int channel,int pulse) 1500=0°
+            //servo(8,1500);
+            servo(0);
             break;
 
         case 'n':
-            servo(6,2100); /// 2100=60°
-            servo(8,2100);
-            printf("position 60°\n");
+            //servo(6,900); /// 2100=60°
+            //servo(8,2100);
+            printf("position 60°\n\r");
+            //servo(6,900); /// 2100=60°
+            //servo(8,2100);
+            servo(60);
             break;
 
         case 'p':
@@ -340,10 +351,11 @@ system("stty raw");  /// No need for pressing 'enter' after every input.
 
 }
 
-void servo(int channel, int pulse){
+void servo(int degrees){
     int i;
-    for(i = 0; i < 3;i++){
-        rc_send_servo_pulse_us(channel,pulse); /// pulse 1500 = 0°, pulse 2100 = 60°
+    for(i = 0; i < 10;i++){
+        rc_send_servo_pulse_us(SERVO_CH_LEFT, 1500+degrees*10); /// pulse 1500 = 0°, pulse 2100 = 60°
+        rc_send_servo_pulse_us(SERVO_CH_RIGHT, 1500-degrees*10);
             rc_usleep(1000000/50);
     }
 }
