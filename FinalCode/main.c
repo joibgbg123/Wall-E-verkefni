@@ -180,8 +180,8 @@ void selfDrive()
 
     if(encoder_switch == 'w'){
 
-        int EncoderLeft = rc_get_encoder_pos(motor_left);
-        int EncoderRight = -rc_get_encoder_pos(motor_right);
+        //int EncoderLeft = rc_get_encoder_pos(motor_left);
+        //int EncoderRight = -rc_get_encoder_pos(motor_right);
         printf("Find me");
         //if(EncoderLeft == 0 && EncoderRight == 0){
          //   void startSlow();
