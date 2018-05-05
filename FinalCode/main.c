@@ -6,6 +6,7 @@
 
 #define BASE_DUTY 0.4
 #define ADJUSTMENT 0.01
+#define Slow_adjusment 0.01
 
 #define motor_right 2
 #define motor_left 1
@@ -24,6 +25,7 @@ pthread_mutex_t lock; //lock for threads and globals
 void *sensors(void *param); //thread for sensors
 int i2c_1(); //sensor 1
 int i2c_2(); // sensor 2
+void startSlow(); // start slow and go easy on the dc motors
 
 int main()
 {
@@ -50,7 +52,7 @@ int main()
 
 	pthread_t sensorThread; /// HERE2 !!!!!!!!!
 	pthread_create(&sensorThread, NULL, sensors, NULL);
-
+printf("Find me here");
     /// Keep looping until state changes to EXITING
 	while(rc_get_state()!=EXITING){
 
@@ -167,39 +169,33 @@ void selfDrive()
 
     if(encoder_switch == 'w'){
 
-        //encoder_switch = 'w';
-        rc_set_motor(motor_left, dutyLeft + 0.045); ///HARDCODE HERE FOR STRAIGHT
-        rc_set_motor(motor_right, dutyRight);
-
-  /*      int i=0;
-        int z = 0;
-        for(i = 0; i < 40; i++){
-            rc_set_motor(motor_left, z);
-            rc_set_motor(motor_right, z);
-            z = z + 0.1;
-        }*/
-        printf("Autobots! Roll out \n\r");
+        int EncoderLeft = rc_get_encoder_pos(motor_left);
+        int EncoderRight = -rc_get_encoder_pos(motor_right);
+        printf("Find me");
+        if(EncoderLeft == 0 && EncoderRight == 0){
+            void startSlow();
+        }
+        //rc_set_motor(motor_left, dutyLeft + 0.045); ///HARDCODE HERE FOR STRAIGHT
+        //rc_set_motor(motor_right, dutyRight);
     }
+
     else if(encoder_switch == 's'){
 
         //encoder_switch = 'w'; //Thread
         rc_set_motor(motor_left, -dutyLeft - 0.030); ///HARDCODE HERE FOR STRAIGHT
         rc_set_motor(motor_right, -dutyRight);
-        printf("Run Away!!! \n\r");
     }
     else if(encoder_switch == 'a'){
 
         //encoder_switch = 'a'; //Thread
         rc_set_motor(motor_left, -dutyLeft/2);
         rc_set_motor(motor_right, dutyRight);
-        printf("vinstri beygja \n\r");
     }
     else if(encoder_switch == 'd'){
 
         //encoder_switch = 'a'; //Thread
         rc_set_motor(motor_left, dutyLeft);
         rc_set_motor(motor_right, -dutyRight/2);
-        printf("haegri beygja \n\r");
     }
 
 }
@@ -281,10 +277,10 @@ void *sensors(void *param)
         int length1 = i2c_1();
         int length2 = i2c_2();
 
-        printf("------skynjarar------ \n \r");
+   /*     printf("------skynjarar------ \n \r");
         printf("--------------------- \n \r");
         printf("|skynjari1|skynjari2| \n \r");
-        printf("|  %i  |  %i  | \n \r", length1, length2);
+        printf("|  %i  |  %i  | \n \r", length1, length2); */
 
         usleep(100000); /// wait for 0.1 second
 
@@ -334,5 +330,56 @@ int i2c_2()
 
     return length2;
 }
+
+void startSlow()
+{
+    int i=0;
+    //int counter = BASE_DUTY / Slow_adjusment;
+    double L=0.0;
+    double R=0.0;
+
+    if(encoder_switch == 'w'){
+        for(i = 0; i < 0.4; i++){
+
+            usleep(100000); /// wait for 0.1 second
+            L = L + Slow_adjusment;
+            R = R - Slow_adjusment;
+            rc_set_motor(motor_left, L);
+            rc_set_motor(motor_right, R);
+        }
+    }
+    else if(encoder_switch == 's'){
+
+    }
+    else if(encoder_switch == 'a'){
+
+        /*        while(L != BASE_DUTY && R != -BASE_DUTY){
+            usleep(100000); /// wait for 0.1 second
+            rc_set_motor(motor_left, L);
+            rc_set_motor(motor_right, R);
+            L = L + Slow_adjusment;
+            R = R - Slow_adjusment;*/
+    }
+    else if(encoder_switch == 'd'){
+
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
