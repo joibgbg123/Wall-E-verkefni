@@ -11,7 +11,7 @@
 #define motor_left 1
 
 #define SERVO_CH_LEFT 8
-#define SERVO_CH_RIGHT 7
+#define SERVO_CH_RIGHT 6
 
 static volatile int Thread_switch = 1;
 static volatile char encoder_switch = 'w';
@@ -48,6 +48,10 @@ int main()
 	/// Activate Hardware
 	rc_enable_motors();
 	rc_enable_servo_power_rail();
+
+	servo(SERVO_CH_LEFT,1500);
+	servo(SERVO_CH_RIGHT,1500);
+
 
  /*   /// ENABLE all Threads
 	pthread_t encoderThread; /// HERE2 !!!!!!!!!
@@ -303,7 +307,7 @@ void *sensors(void *param)
 
             servo_look();
 
-            if (length1 < length2){
+            if (length1 > length2){
 
                 encoder_switch = 'd';
             }
@@ -361,8 +365,8 @@ void servo(int channel, int pulse){
 void servo_look(){
 
     /// 1500 eru 0° og svo margfalda ° með 10 og bæta við fyrir réttsælis og draga frá fyrir rangsælis;
-    servo(SERVO_CH_LEFT,700);
-    servo(SERVO_CH_RIGHT,2300);
+    servo(SERVO_CH_LEFT,2300);
+    servo(SERVO_CH_RIGHT,700);
     usleep(70000);
 
 }
