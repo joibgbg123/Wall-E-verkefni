@@ -183,11 +183,11 @@ void selfDrive()
         int EncoderLeft = rc_get_encoder_pos(motor_left);
         int EncoderRight = -rc_get_encoder_pos(motor_right);
         printf("Find me");
-        if(EncoderLeft == 0 && EncoderRight == 0){
-            void startSlow();
-        }
-        //rc_set_motor(motor_left, dutyLeft + 0.045); ///HARDCODE HERE FOR STRAIGHT
-        //rc_set_motor(motor_right, dutyRight);
+        //if(EncoderLeft == 0 && EncoderRight == 0){
+         //   void startSlow();
+        //}
+        rc_set_motor(motor_left, dutyLeft + 0.045); ///HARDCODE HERE FOR STRAIGHT
+        rc_set_motor(motor_right, dutyRight);
     }
 
     else if(encoder_switch == 's'){
@@ -308,6 +308,7 @@ void *sensors(void *param)
             if (length1 > length2){
 
                 encoder_switch = 'd';
+
             }
             else {
                 encoder_switch = 'a';
