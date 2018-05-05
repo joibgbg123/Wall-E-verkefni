@@ -10,6 +10,9 @@
 #define motor_right 2
 #define motor_left 1
 
+#define SERVO_CH_LEFT 8
+#define SERVO_CH_RIGHT 7
+
 static volatile int Thread_switch = 1;
 static volatile char encoder_switch = 'w';
 //static volatile char drivingSwitch = 'w'; ///MAYBE
@@ -24,6 +27,8 @@ pthread_mutex_t lock; //lock for threads and globals
 void *sensors(void *param); //thread for sensors
 int i2c_1(); //sensor 1
 int i2c_2(); // sensor 2
+void servo(int channel, int pulse);
+void servo_look();
 
 int main()
 {
@@ -335,4 +340,21 @@ int i2c_2()
     return length2;
 }
 
+void servo(int channel, int pulse){
+    int i;
+    for(i = 0; i < 3;i++){
+        rc_send_servo_pulse_us(channel,pulse); /// pulse 1500 = 0°, pulse 2100 = 60°
+            rc_usleep(1000000/50);
+    }
+}
+
+void servo_look(){
+
+    /// 1500 eru 0° og svo margfalda ° með 10 og bæta við fyrir réttsælis og draga frá fyrir rangsælis;
+    servo(SERVO_CH_LEFT,700);
+    servo(SERVO_CH_RIGHT,2300);
+
+
+
+}
 
