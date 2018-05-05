@@ -31,9 +31,8 @@ void soft_start(){
     for(i=0;i <= desired_speed;i+=0.1){
         rc_set_motor(MOTOR_RIGHT,i);
         rc_set_motor(MOTOR_LEFT,-i);
-        sleep(0.1);
+        usleep(100000);
     }
-
 }
 /// Function for the robot to stop driving slowly, so it doesn't just stop from full speed, better for the motors
 void soft_stop(){
@@ -41,7 +40,7 @@ void soft_stop(){
     for(i=desired_speed;i >= 0;i-=0.1){
         rc_set_motor(MOTOR_RIGHT,i);
         rc_set_motor(MOTOR_LEFT,-i);
-        sleep(0.1);
+        usleep(100000);
     }
 
 }

@@ -2,8 +2,9 @@
 #include <stdlib.h>
 #include <vlc/vlc.h>
 
-int main(int argc, char **argv)
-{
+int main(int argc, char **argv){
+
+
     libvlc_instance_t *inst;
     libvlc_media_player_t *mp;
     libvlc_media_t *m;
