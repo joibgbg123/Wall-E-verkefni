@@ -297,9 +297,19 @@ void *sensors(void *param)
         if(length1 <= 40 || length2 <= 40){
             encoder_switch = 's';
 
-            usleep(1000000); /// wait for 1 second
+            //usleep(1000000); /// wait for 1 second
 
-            encoder_switch = 'a';
+            //encoder_switch = 'a';
+
+            servo_look();
+
+            if (length1 < length2){
+
+                encoder_switch = 'd';
+            }
+            else {
+                encoder_switch = 'a';
+            }
 
             usleep(1000000); /// wait for 1 second
 
@@ -353,8 +363,7 @@ void servo_look(){
     /// 1500 eru 0° og svo margfalda ° með 10 og bæta við fyrir réttsælis og draga frá fyrir rangsælis;
     servo(SERVO_CH_LEFT,700);
     servo(SERVO_CH_RIGHT,2300);
-
-
+    usleep(70000);
 
 }
 
