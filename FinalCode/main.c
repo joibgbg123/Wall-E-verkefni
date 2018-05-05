@@ -59,7 +59,7 @@ int main()
 
 	pthread_t sensorThread; /// HERE2 !!!!!!!!!
 	pthread_create(&sensorThread, NULL, sensors, NULL);
-printf("Find me here");
+
     /// Keep looping until state changes to EXITING
 	while(rc_get_state()!=EXITING){
 
@@ -178,9 +178,13 @@ void selfDrive()
 
         int EncoderLeft = rc_get_encoder_pos(motor_left);
         int EncoderRight = -rc_get_encoder_pos(motor_right);
-        printf("Find me");
+
+        printf("| Left | Right |\n\r");
+        printf("|  %i  |  %i  |\n\r",EncoderLeft,EncoderRight);
+        printf("|  %f  |  %f  |\n\r",dutyLeft,dutyRight);
+
         if(EncoderLeft == 0 && EncoderRight == 0){
-            void startSlow();
+            startSlow();
         }
         //rc_set_motor(motor_left, dutyLeft + 0.045); ///HARDCODE HERE FOR STRAIGHT
         //rc_set_motor(motor_right, dutyRight);
@@ -351,18 +355,19 @@ int i2c_2()
 void startSlow()
 {
     int i=0;
-    //int counter = BASE_DUTY / Slow_adjusment;
-    double L=0.0;
-    double R=0.0;
+    int counter = BASE_DUTY / Slow_adjusment;
+    double Left=0.0;
+    double Right=0.0;
 
+    printf("Find me here 1\n\r");
     if(encoder_switch == 'w'){
-        for(i = 0; i < 0.4; i++){
-
+        for(i = 0; i < counter; i++){
+            printf("Find me here 2\n\r");
             usleep(100000); /// wait for 0.1 second
-            L = L + Slow_adjusment;
-            R = R - Slow_adjusment;
-            rc_set_motor(motor_left, L);
-            rc_set_motor(motor_right, R);
+            Left = Left + Slow_adjusment;
+            Right = Right - Slow_adjusment;
+            rc_set_motor(motor_left, Left);
+            rc_set_motor(motor_right, Right);
         }
     }
     else if(encoder_switch == 's'){
@@ -396,6 +401,5 @@ void servo_look(){
     servo(SERVO_CH_LEFT,700);
     servo(SERVO_CH_RIGHT,2300);
     usleep(70000);
-
 }
 
