@@ -314,6 +314,7 @@ void *sensors(void *param)
 
         pthread_mutex_lock(&lock); ///LOCK IT
         if(length1 <= 40 || length2 <= 40){
+            play_song(2);
             drivingState = 1; ///Fyrir take off
             encoder_switch = 's';
 
@@ -447,9 +448,16 @@ void play_song(int song_key){
                 ///Hér erum við inn í nýja processnum.
                 printf("In child process.\n");  ///Þessari línu má sleppa, aðeins til að villuprófa
 
-                if(1){
-                execlp("mpg123", "mpg123", "-q", "./sounds/roll.mp3", NULL); ///mpg123 látinn spila skránna sem er skrifuð
-                return 0;  ///Process hættir keyrslu
+                switch(song_key){
+                case 1:
+                execlp("mpg123", "mpg123", "-q", "./sound/roll.mp3", NULL); ///mpg123 látinn spila skránna sem er skrifuð
+                // return 0;  ///Process hættir keyrslu
+                break;
+
+                case 2:
+                execlp("mpg123", "mpg123", "-q", "./sound/runaway.mp3", NULL); ///mpg123 látinn spila skránna sem er skrifuð
+                // return 0;  ///Process hættir keyrslu
+                break;
                 }
             }
 }

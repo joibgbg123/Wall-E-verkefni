@@ -335,11 +335,12 @@ void play_song(int song_key){
                 ///Hér erum við inn í nýja processnum.
                 printf("In child process.\n");  ///Þessari línu má sleppa, aðeins til að villuprófa
 
-                if(1){
-                execlp("mpg123", "mpg123", "-q", "./sound/sample.mp3", NULL); ///mpg123 látinn spila skránna sem er skrifuð
-                return 0;  ///Process hættir keyrslu
+                switch(song_key){
+                case 1:
+                execlp("mpg123", "mpg123", "-q", "./sound/runaway.mp3", NULL); ///mpg123 látinn spila skránna sem er skrifuð
+                // return 0;  ///Process hættir keyrslu
+                break;
                 }
-
             }
 }
 
