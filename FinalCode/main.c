@@ -52,8 +52,7 @@ int main()
 	rc_enable_motors();
 	rc_enable_servo_power_rail();
 
-	servo(0);
-	servo(0);
+	servo(-10); /// byrja með servo a réttum stað, -10 er svo hann sé smá rangeygður
 
 
  /*   /// ENABLE all Threads
@@ -94,6 +93,7 @@ printf("Find me here");
 	int pthread_cancel(pthread_t sensorThread);
 
 	// exit cleanly
+	servo(0);
 	rc_cleanup();
     return 0;
 }
@@ -298,11 +298,14 @@ void *sensors(void *param)
         if(length1 <= 40 || length2 <= 40){
             encoder_switch = 's';
 
-            servo(60);
+            servo(60); /// þegar hann sér eitthvað snýr hann servo um 60°
 
             usleep(500000); /// wait for 0.5 second
 
             //encoder_switch = 'a';
+
+            /// if setningin segir bara til um þegar hann er að skoða sig um hvort hann beygji til hægri eða vinstri, 'a' er vinstri, 'd' er hægri.
+            /// En hann ber saman lengdirnar sem hann sér í skynjurunum og tekur ákvörðun.
 
             if (length1 > length2){
 
@@ -312,7 +315,7 @@ void *sensors(void *param)
             else {
                 encoder_switch = 'a';
             }
-            servo(0);
+            servo(-1);
 
             usleep(1000000); /// wait for 1 second
 
@@ -392,7 +395,7 @@ void servo(int degrees){
     /// 1500 eru 0° og svo margfalda ° með 10 og bæta við fyrir rangsælis og draga frá fyrir réttsælis;
     for(i = 0; i < 10;i++){
         rc_send_servo_pulse_us(SERVO_CH_LEFT, 1500+degrees*10); /// pulse 1500 = 0°, pulse 2100 = 60°
-        rc_send_servo_pulse_us(SERVO_CH_RIGHT, 1500-degrees*10);
+        rc_send_servo_pulse_us(SERVO_CH_RIGHT, 1500-degrees*10); /// mínus því hann lýtur til sitt hvorrar áttarinnar. Hægri skynjari til hægri og öfugt.s
             rc_usleep(1000000/50);
     }
 }
