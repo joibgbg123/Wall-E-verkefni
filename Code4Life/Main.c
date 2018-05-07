@@ -18,6 +18,10 @@
 
 #include <pthread.h>
 
+/// til að spila hljóð....vonandi
+#include <sys/types.h>
+#include <sys/wait.h>
+
 /// #include <mpg123>
 
 //static volatile double duty_start = 0.4;
@@ -31,7 +35,8 @@ void on_pause_pressed();
 void on_pause_released();
 void Drive();
 void servo(int degrees); /// fall til þess að keyra nokkra púlsa á servoa
-
+void playMusic();
+/*
 ///!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 void *encoderEntry(void *param)
 {
@@ -73,7 +78,6 @@ void *encoderEntry(void *param)
     //}
 
 
-    /*
     int *value;
     value = (int*)param;
 
@@ -84,11 +88,11 @@ void *encoderEntry(void *param)
         ++i;
     }
 
-    return NULL;*/
+    return NULL;
 } ///HERE!!!!!!!!
-///!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+///!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!*/
 
-int main(){
+int main(int argc, char* argv[]){
 	// always initialize cape library first
 	if(rc_initialize()){
 		fprintf(stderr,"ERROR: failed to initialize rc_initialize(), are you root?\n");
@@ -169,6 +173,9 @@ void Drive()
 	int E1 = 0;
 	int E2 = 0;
 
+	/// sound definitions
+	// pid_t pid;
+
 
 system("stty raw");  /// No need for pressing 'enter' after every input.
 
@@ -190,55 +197,6 @@ system("stty raw");  /// No need for pressing 'enter' after every input.
             E2 = -rc_get_encoder_pos(encoder_right);
 
 
-/*
-            while(rc_get_state() != EXITING){
-
-<<<<<<< HEAD
-            if (E1 > E2 && duty2 < 0.6)
-=======
-                E1 = rc_get_encoder_pos(encoder_left);
-                E2 = -rc_get_encoder_pos(encoder_right);
-
-            if (E1 > E2 && duty2 < 0.5)
->>>>>>> a9cf488ea420d5199190641c76595136d1510ef3
-            {
-                duty2 -= 0.005;
-                rc_set_motor(motor_right, duty2);
-                printf("if1");
-            }
-            else if (E1 < E2 && duty1 < 0.5)
-            {
-                duty1 += 0.005;
-                rc_set_motor(motor_left, duty1);
-                printf("if2");
-            }
-            else if (E1 > E2)
-            {
-                duty1 -= 0.005;
-                rc_set_motor(motor_left, duty1);
-                printf("if3");
-            }
-            else if (E1 < E2)
-            {
-                duty2 += 0.005;
-                rc_set_motor(motor_right, duty2);
-                printf("if4");
-            }
-            else {
-                /// keep driving if they are the same
-                printf("if5");
-            }
-            printf("| duty1 | duty2 | \n \r ");
-            printf("|  %2f  |  %2f  | \n \r ", duty1, duty2);
-
-            rc_usleep(500000);
-
-            if(E1 > 700){
-                break;
-            }
-
-            }/// her endar while lykkja
-            break;*/
 
         case 's':
             rc_set_motor(motor_left, -duty1);
@@ -326,6 +284,10 @@ system("stty raw");  /// No need for pressing 'enter' after every input.
             printf("|  %i  |  %i  | \n \r", length1, length2);
             break;
 
+        case 'u':
+            playMusic();
+            break;
+
         /*
         case 'l':
             rc_i2c_init(1,0x70);
@@ -358,6 +320,31 @@ void servo(int degrees){
         rc_send_servo_pulse_us(SERVO_CH_RIGHT, 1500-degrees*10);
             rc_usleep(1000000/50);
     }
+}
+
+void playMusic(){
+            pid_t pid;
+            pid = fork(); ///Býr til nýjan process
+
+
+            if(pid < 0) {      ///Ath hvort það hafi tekist
+                perror("Fork failed\n");
+                exit(1);
+            }
+            else if(pid == 0){
+                ///Hér erum við inn í nýja processnum.
+                printf("In child process.\n");  ///Þessari línu má sleppa, aðeins til að villuprófa
+                execlp("mpg123", "mpg123", "-q", "./sample.mp3", NULL); ///mpg123 látinn spila skránna test_mp3
+                printf("This line shuld not be printed.\n"); ///Þessari línu má sleppa, aðeins til að villuprófa
+                return 0;  ///Process hættir keyrslu
+
+
+            }
+            ///Hér erum við inni í upphaflega forritinu.
+            // wait(NULL);  ///Bíða eftir því að lagið klárist. Það er gott að hafa þessa línu ef þið eruð að prófa kóðann.
+                         ///Ef þið eruð að nota þennan kóða inn í forritinu ykkar myndi forritið halda áfram keyrslu
+                        ///meðan lagið væri að klárast og þá sleppa wait(NULL).
+
 }
 
 
