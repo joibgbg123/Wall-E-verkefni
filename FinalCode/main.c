@@ -16,7 +16,7 @@
 
 static volatile int Thread_switch = 1;
 static volatile char encoder_switch = 'w';
-//static volatile char drivingSwitch = 'w'; ///MAYBE
+static volatile int drivingState = 1; ///1 fyrir take off 0 þegar hann er á ferð
 
 /// function declarations
 void Drive();
@@ -55,13 +55,13 @@ int main()
 	servo(-10); /// byrja með servo a réttum stað, -10 er svo hann sé smá rangeygður
 
 
- /*   /// ENABLE all Threads
-	pthread_t encoderThread; /// HERE2 !!!!!!!!!
+    /// ENABLE all Threads
+/*	pthread_t encoderThread; /// HERE2 !!!!!!!!!
 	pthread_create(&encoderThread, NULL, encoderEntry, NULL); /// HERE3 !!!!!!!!*/
 
 	pthread_t sensorThread; /// HERE2 !!!!!!!!!
 	pthread_create(&sensorThread, NULL, sensors, NULL);
-printf("Find me here");
+
     /// Keep looping until state changes to EXITING
 	while(rc_get_state()!=EXITING){
 
@@ -86,9 +86,9 @@ printf("Find me here");
 		usleep(100000);
 	}
 
-  /*  ///Clean the Thread
+    ///Clean the Thread
 	//pthread_join(encoderThread, NULL); /// HERE4 !!!
-	int pthread_cancel(pthread_t encoderThread);*/
+	//int pthread_cancel(pthread_t encoderThread);
 
 	int pthread_cancel(pthread_t sensorThread);
 
@@ -179,12 +179,16 @@ void selfDrive()
 
     if(encoder_switch == 'w'){
 
-        //int EncoderLeft = rc_get_encoder_pos(motor_left);
-        //int EncoderRight = -rc_get_encoder_pos(motor_right);
-        printf("Find me");
-        //if(EncoderLeft == 0 && EncoderRight == 0){
-         //   void startSlow();
-        //}
+        int EncoderLeft = rc_get_encoder_pos(motor_left);
+        int EncoderRight = -rc_get_encoder_pos(motor_right);
+
+        printf("| Left | Right |\n\r");
+        printf("|  %i  |  %i  |\n\r",EncoderLeft,EncoderRight);
+        if(drivingState == 1){ //EncoderLeft == 0 && EncoderRight == 0
+            startSlow();
+            drivingState = 0;
+        }
+
         rc_set_motor(motor_left, dutyLeft + 0.045); ///HARDCODE HERE FOR STRAIGHT
         rc_set_motor(motor_right, dutyRight);
     }
@@ -192,18 +196,30 @@ void selfDrive()
     else if(encoder_switch == 's'){
 
         //encoder_switch = 'w'; //Thread
+        if(drivingState == 1){ //EncoderLeft == 0 && EncoderRight == 0
+            startSlow();
+            drivingState = 0;
+        }
         rc_set_motor(motor_left, -dutyLeft - 0.030); ///HARDCODE HERE FOR STRAIGHT
         rc_set_motor(motor_right, -dutyRight);
     }
     else if(encoder_switch == 'a'){
 
         //encoder_switch = 'a'; //Thread
+        if(drivingState == 1){ //EncoderLeft == 0 && EncoderRight == 0
+            startSlow();
+            drivingState = 0;
+        }
         rc_set_motor(motor_left, -dutyLeft/2);
         rc_set_motor(motor_right, dutyRight);
     }
     else if(encoder_switch == 'd'){
 
         //encoder_switch = 'a'; //Thread
+        if(drivingState == 1){ //EncoderLeft == 0 && EncoderRight == 0
+            startSlow();
+            drivingState = 0;
+        }
         rc_set_motor(motor_left, dutyLeft);
         rc_set_motor(motor_right, -dutyRight/2);
     }
@@ -213,7 +229,7 @@ void selfDrive()
 void *encoderEntry(void *param)
 {
     /// Motor definitions
-    double dutyLeft = BASE_DUTY;
+    //double dutyLeft = BASE_DUTY;
     double dutyRight = -BASE_DUTY;
 
     while(Thread_switch == 1){
@@ -223,9 +239,9 @@ void *encoderEntry(void *param)
         int EncoderRight = -rc_get_encoder_pos(motor_right);
 
         if(encoder_switch == 'w' || encoder_switch == 's'){
-            printf("| Left | Right |\n\r");
+            /*printf("| Left | Right |\n\r");
             printf("|  %i  |  %i  |\n\r",EncoderLeft,EncoderRight);
-            printf("|  %f  |  %f  |\n\r",dutyLeft,dutyRight);
+            printf("|  %f  |  %f  |\n\r",dutyLeft,dutyRight);*/
 
             if(EncoderLeft < EncoderRight){
                 rc_set_motor(motor_right, dutyRight += ADJUSTMENT);
@@ -296,6 +312,7 @@ void *sensors(void *param)
 
         pthread_mutex_lock(&lock); ///LOCK IT
         if(length1 <= 40 || length2 <= 40){
+            drivingState = 1; ///Fyrir take off
             encoder_switch = 's';
 
             servo(60); /// þegar hann sér eitthvað snýr hann servo um 60°
@@ -306,7 +323,7 @@ void *sensors(void *param)
 
             /// if setningin segir bara til um þegar hann er að skoða sig um hvort hann beygji til hægri eða vinstri, 'a' er vinstri, 'd' er hægri.
             /// En hann ber saman lengdirnar sem hann sér í skynjurunum og tekur ákvörðun.
-
+            drivingState = 1; ///Fyrir take off
             if (length1 > length2){
 
                 encoder_switch = 'd';
@@ -319,6 +336,7 @@ void *sensors(void *param)
 
             usleep(1000000); /// wait for 1 second
 
+            drivingState = 1; ///Fyrir take off
             encoder_switch = 'w';
         }
         pthread_mutex_unlock(&lock); ///UNLOCK IT
@@ -359,14 +377,13 @@ int i2c_2()
 void startSlow()
 {
     int i=0;
-    //int counter = BASE_DUTY / Slow_adjusment;
+    int counter = BASE_DUTY/Slow_adjusment;
     double L=0.0;
     double R=0.0;
 
     if(encoder_switch == 'w'){
-        for(i = 0; i < 0.4; i++){
-
-            usleep(100000); /// wait for 0.1 second
+        for(i = 0; i < counter; i++){
+            usleep(10000); /// wait for 0.01 second
             L = L + Slow_adjusment;
             R = R - Slow_adjusment;
             rc_set_motor(motor_left, L);
@@ -374,19 +391,34 @@ void startSlow()
         }
     }
     else if(encoder_switch == 's'){
+        for(i = 0; i < counter; i++){
 
-    }
-    else if(encoder_switch == 'a'){
-
-        /*        while(L != BASE_DUTY && R != -BASE_DUTY){
-            usleep(100000); /// wait for 0.1 second
+            usleep(10000); /// wait for 0.01 second
+            L = L - Slow_adjusment;
+            R = R + Slow_adjusment;
             rc_set_motor(motor_left, L);
             rc_set_motor(motor_right, R);
-            L = L + Slow_adjusment;
-            R = R - Slow_adjusment;*/
+        }
+    }
+    else if(encoder_switch == 'a'){
+        for(i = 0; i < counter; i++){
+
+            usleep(10000); /// wait for 0.01 second
+            L = L - Slow_adjusment;
+            R = R - Slow_adjusment;
+            rc_set_motor(motor_left, L/2);
+            rc_set_motor(motor_right, R);
+        }
     }
     else if(encoder_switch == 'd'){
+        for(i = 0; i < counter; i++){
 
+            usleep(10000); /// wait for 0.01 second
+            L = L + Slow_adjusment;
+            R = R + Slow_adjusment;
+            rc_set_motor(motor_left, L);
+            rc_set_motor(motor_right, R/2);
+        }
     }
 }
 
