@@ -35,7 +35,7 @@ void on_pause_pressed();
 void on_pause_released();
 void Drive();
 void servo(int degrees); /// fall til þess að keyra nokkra púlsa á servoa
-void playMusic();
+void play_song(int sound_key);
 /*
 ///!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 void *encoderEntry(void *param)
@@ -285,7 +285,7 @@ system("stty raw");  /// No need for pressing 'enter' after every input.
             break;
 
         case 'u':
-            playMusic();
+            play_song(1);
             break;
 
         /*
@@ -322,8 +322,8 @@ void servo(int degrees){
     }
 }
 
-void playMusic(){
-            pid_t pid;
+void play_song(int song_key){
+           pid_t pid;
             pid = fork(); ///Býr til nýjan process
 
 
@@ -334,17 +334,13 @@ void playMusic(){
             else if(pid == 0){
                 ///Hér erum við inn í nýja processnum.
                 printf("In child process.\n");  ///Þessari línu má sleppa, aðeins til að villuprófa
-                execlp("mpg123", "mpg123", "-q", "./sample.mp3", NULL); ///mpg123 látinn spila skránna test_mp3
-                printf("This line shuld not be printed.\n"); ///Þessari línu má sleppa, aðeins til að villuprófa
-                return 0;  ///Process hættir keyrslu
 
+                if(1){
+                execlp("mpg123", "mpg123", "-q", "./sound/sample.mp3", NULL); ///mpg123 látinn spila skránna sem er skrifuð
+                return 0;  ///Process hættir keyrslu
+                }
 
             }
-            ///Hér erum við inni í upphaflega forritinu.
-            // wait(NULL);  ///Bíða eftir því að lagið klárist. Það er gott að hafa þessa línu ef þið eruð að prófa kóðann.
-                         ///Ef þið eruð að nota þennan kóða inn í forritinu ykkar myndi forritið halda áfram keyrslu
-                        ///meðan lagið væri að klárast og þá sleppa wait(NULL).
-
 }
 
 
