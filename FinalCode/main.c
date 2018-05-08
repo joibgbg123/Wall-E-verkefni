@@ -450,7 +450,7 @@ void play_song(int song_key){
 
                 switch(song_key){
                 case 1:
-                execlp("mpg123", "mpg123", "-q", "./sound/roll.mp3", NULL); ///mpg123 látinn spila skránna sem er skrifuð
+                execlp("mpg123", "mpg123", "-q", "./sound/walle3.mp3", NULL); ///mpg123 látinn spila skránna sem er skrifuð
                 // return 0;  ///Process hættir keyrslu
                 break;
 
