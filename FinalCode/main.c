@@ -28,6 +28,7 @@ pthread_mutex_t lock; //lock for threads and globals
 void *sensors(void *param); //thread for sensors
 int i2c_1(); //sensor 1
 int i2c_2(); // sensor 2
+void play_song(int sound_key);  /// a function that plays a song or a sound according to the sound_key
 
 void startSlow(); // start slow and go easy on the dc motors
 void servo(int degrees);
@@ -42,6 +43,7 @@ int main()
 	}
 
 	printf("\nDestroy all humans\n\r");
+	play_song(1);
 
 	///All definitions & functions here below
 	rc_set_pause_pressed_func(&on_pause_pressed);
@@ -312,6 +314,7 @@ void *sensors(void *param)
 
         pthread_mutex_lock(&lock); ///LOCK IT
         if(length1 <= 40 || length2 <= 40){
+            play_song(2);
             drivingState = 1; ///Fyrir take off
             encoder_switch = 's';
 
@@ -432,5 +435,31 @@ void servo(int degrees){
     }
 }
 
+void play_song(int song_key){
+           pid_t pid;
+            pid = fork(); ///Býr til nýjan process
+
+
+            if(pid < 0) {      ///Ath hvort það hafi tekist
+                perror("Fork failed\n");
+                exit(1);
+            }
+            else if(pid == 0){
+                ///Hér erum við inn í nýja processnum.
+                printf("In child process.\n");  ///Þessari línu má sleppa, aðeins til að villuprófa
+
+                switch(song_key){
+                case 1:
+                execlp("mpg123", "mpg123", "-q", "./sound/roll.mp3", NULL); ///mpg123 látinn spila skránna sem er skrifuð
+                // return 0;  ///Process hættir keyrslu
+                break;
+
+                case 2:
+                execlp("mpg123", "mpg123", "-q", "./sound/runaway.mp3", NULL); ///mpg123 látinn spila skránna sem er skrifuð
+                // return 0;  ///Process hættir keyrslu
+                break;
+                }
+            }
+}
 
 
