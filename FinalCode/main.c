@@ -59,8 +59,8 @@ int main()
 
 
     /// ENABLE all Threads
-	pthread_t encoderThread; /// HERE2 !!!!!!!!!
-	pthread_create(&encoderThread, NULL, encoderEntry, NULL); /// HERE3 !!!!!!!!
+	/*pthread_t encoderThread; /// HERE2 !!!!!!!!!
+	pthread_create(&encoderThread, NULL, encoderEntry, NULL); /// HERE3 !!!!!!!!*/
 
 	pthread_t sensorThread; /// HERE2 !!!!!!!!!
 	pthread_create(&sensorThread, NULL, sensors, NULL);
