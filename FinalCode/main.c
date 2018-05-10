@@ -4,7 +4,8 @@
 #include <rc_usefulincludes.h>
 #include <roboticscape.h>
 
-#define BASE_DUTY -0.4
+
+#define BASE_DUTY 0.4
 #define ADJUSTMENT 0.01
 #define Slow_adjusment 0.01
 
