@@ -244,7 +244,7 @@ void *encoderEntry(void *param)
         int error = 0; /// prufa að breyta reglun ...Jói
         int fasti = 5; /// -||- .. Jói
 
-        if(encoder_switch == 'w' || encoder_switch == 's'){
+        if(drivingState == 1){
             printf("| ??Left | Right |\n\r");
             printf("|  %i  |  %i  |\n\r",EncoderLeft,EncoderRight);
             printf("|  %f  |  %f  |\n\r",BASE_DUTY,dutyRight);
@@ -270,7 +270,7 @@ void *encoderEntry(void *param)
 
         }
 
-        else if(encoder_switch == 'a' || encoder_switch == 'd'){
+        else if(drivingState == 0){
             rc_set_encoder_pos(motor_left, 0);
             rc_set_encoder_pos(motor_right, 0);
 
