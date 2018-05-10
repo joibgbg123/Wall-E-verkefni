@@ -22,13 +22,15 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 
-/// #include <mpg123>
 
 //static volatile double duty_start = 0.4;
 
-#define BASE_DUTY 0.4;
+#define BASE_DUTY -0.4
 #define SERVO_CH_LEFT 8
 #define SERVO_CH_RIGHT 6
+    /// Motor definitions
+#define motor_right 2
+#define motor_left 1
 
 // function declarations
 void on_pause_pressed();
@@ -157,21 +159,6 @@ int main(int argc, char* argv[]){
 void Drive()
 {
 
-    double duty_start = BASE_DUTY
-    double duty1 = duty_start;
-    double duty2 = -duty_start;
-
-
-    /// Motor definitions
-    int motor_right = 2;
-    int motor_left = 1;
-
-
-	/// Encoder definitions
-	int encoder_right = 2;
-	int encoder_left = 1;
-	int E1 = 0;
-	int E2 = 0;
 
 	/// sound definitions
 	// pid_t pid;
@@ -181,42 +168,45 @@ system("stty raw");  /// No need for pressing 'enter' after every input.
 
 //char input;
 //do{
+
+            /// Motor definitions
+    double dutyLeft = BASE_DUTY;
+    double dutyRight = -BASE_DUTY;
+
+	/// Encoder definitions
+    int EncoderLeft = rc_get_encoder_pos(motor_left);
+    int EncoderRight = -rc_get_encoder_pos(motor_right);
+
+
     char input = getchar();
     printf("> ");
 
     switch(input){
         case 'w':
-            rc_set_motor(motor_left, duty1);
-            rc_set_motor(motor_right, duty2);
+            printf("| EncoderLeft | EncoderRight |\n\r");
+            printf("| %i | %i |\n\r",EncoderLeft,EncoderRight);
 
-            printf("Autobots! Roll out \n");
-            printf("| E1 | E2 |\n");
-            printf("| %i | %i |\n",-E1,E2);
-
-            E1 = rc_get_encoder_pos(encoder_left);
-            E2 = -rc_get_encoder_pos(encoder_right);
-
-
+            rc_set_motor(motor_left, dutyLeft ); ///HARDCODE HERE FOR STRAIGHT
+            rc_set_motor(motor_right, dutyRight);
+            printf("Autobots! Roll out \n\r");
+            break;
 
         case 's':
-            rc_set_motor(motor_left, -duty1);
-            rc_set_motor(motor_right, -duty2);
-
-            printf("Run Away!!! \n");
+            rc_set_motor(motor_left, -dutyLeft );
+            rc_set_motor(motor_right, -dutyRight);
+            printf("Run Away!!! \n\r");
             break;
 
         case 'a':
-            rc_set_motor(motor_left, -duty_start/2);
-            rc_set_motor(motor_right, -duty_start);
-
-            printf("vinstri beygja \n");
+            rc_set_motor(motor_left, -dutyLeft/2);
+            rc_set_motor(motor_right, dutyRight);
+            printf("vinstri beygja \n\r");
             break;
 
         case 'd':
-
-            rc_set_motor(motor_left, duty_start);
-            rc_set_motor(motor_right, duty_start/2);
-            printf("haegri beygja \n");
+            rc_set_motor(motor_left, dutyLeft);
+            rc_set_motor(motor_right, -dutyRight/2);
+            printf("haegri beygja \n\r");
             break;
 
         case 'f': ///STOPPA
@@ -240,7 +230,7 @@ system("stty raw");  /// No need for pressing 'enter' after every input.
             printf("position 0°\n\r");
             //servo(6,1500); /// void servo(int channel,int pulse) 1500=0°
             //servo(8,1500);
-            servo(0);
+            servo(-10);
             break;
 
         case 'n':
@@ -316,7 +306,7 @@ system("stty raw");  /// No need for pressing 'enter' after every input.
 void servo(int degrees){
     int i;
     for(i = 0; i < 10;i++){
-        rc_send_servo_pulse_us(SERVO_CH_LEFT, 1500+degrees*10); /// pulse 1500 = 0°, pulse 2100 = 60°
+        rc_send_servo_pulse_us(SERVO_CH_LEFT, 1500+degrees*9); /// pulse 1500 = 0°, pulse 2100 = 60°
         rc_send_servo_pulse_us(SERVO_CH_RIGHT, 1500-degrees*10);
             rc_usleep(1000000/50);
     }
