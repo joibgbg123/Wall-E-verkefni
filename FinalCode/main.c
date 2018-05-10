@@ -4,7 +4,8 @@
 #include <rc_usefulincludes.h>
 #include <roboticscape.h>
 
-#define BASE_DUTY 0.6
+
+#define BASE_DUTY -0.4
 #define ADJUSTMENT 0.01
 #define Slow_adjusment 0.01
 
@@ -58,8 +59,8 @@ int main()
 
 
     /// ENABLE all Threads
-/*	pthread_t encoderThread; /// HERE2 !!!!!!!!!
-	pthread_create(&encoderThread, NULL, encoderEntry, NULL); /// HERE3 !!!!!!!!*/
+	pthread_t encoderThread; /// HERE2 !!!!!!!!!
+	pthread_create(&encoderThread, NULL, encoderEntry, NULL); /// HERE3 !!!!!!!!
 
 	pthread_t sensorThread; /// HERE2 !!!!!!!!!
 	pthread_create(&sensorThread, NULL, sensors, NULL);
@@ -90,7 +91,7 @@ int main()
 
     ///Clean the Thread
 	//pthread_join(encoderThread, NULL); /// HERE4 !!!
-	//int pthread_cancel(pthread_t encoderThread);
+	int pthread_cancel(pthread_t encoderThread);
 
 	int pthread_cancel(pthread_t sensorThread);
 
@@ -184,14 +185,14 @@ void selfDrive()
         int EncoderLeft = rc_get_encoder_pos(motor_left);
         int EncoderRight = -rc_get_encoder_pos(motor_right);
 
-        printf("| Left | Right |\n\r");
+        printf("| hér?Left | Right |\n\r");
         printf("|  %i  |  %i  |\n\r",EncoderLeft,EncoderRight);
         if(drivingState == 1){ //EncoderLeft == 0 && EncoderRight == 0
             startSlow();
             drivingState = 0;
         }
 
-        rc_set_motor(motor_left, dutyLeft + 0.045); ///HARDCODE HERE FOR STRAIGHT
+        rc_set_motor(motor_left, dutyLeft);
         rc_set_motor(motor_right, dutyRight);
     }
 
@@ -202,7 +203,7 @@ void selfDrive()
             startSlow();
             drivingState = 0;
         }
-        rc_set_motor(motor_left, -dutyLeft - 0.030); ///HARDCODE HERE FOR STRAIGHT
+        rc_set_motor(motor_left, -dutyLeft);
         rc_set_motor(motor_right, -dutyRight);
     }
     else if(encoder_switch == 'a'){
@@ -239,27 +240,39 @@ void *encoderEntry(void *param)
         /// Encoder definitions
         int EncoderLeft = rc_get_encoder_pos(motor_left);
         int EncoderRight = -rc_get_encoder_pos(motor_right);
+        int error = 0; /// prufa að breyta reglun ...Jói
+        int fasti = 5; /// -||- .. Jói
 
         if(encoder_switch == 'w' || encoder_switch == 's'){
-            /*printf("| Left | Right |\n\r");
+            printf("| ??Left | Right |\n\r");
             printf("|  %i  |  %i  |\n\r",EncoderLeft,EncoderRight);
-            printf("|  %f  |  %f  |\n\r",dutyLeft,dutyRight);*/
+            printf("|  %f  |  %f  |\n\r",BASE_DUTY,dutyRight);
 
+            /*
             if(EncoderLeft < EncoderRight){
                 rc_set_motor(motor_right, dutyRight += ADJUSTMENT);
-                printf("+0.01 Left\n\r");
+                printf("+%f Left\n\r",ADJUSTMENT);
             }
             else if(EncoderLeft > EncoderRight){
                 rc_set_motor(motor_right, dutyRight -= ADJUSTMENT);
-                printf("-0.01 Right\n\r");
-            }
+                printf("-%f Right\n\r",ADJUSTMENT);
+            }*/
+
+            error = rc_get_encoder_pos(motor_left) + rc_get_encoder_pos(motor_right); ///plús því mínus(í jöfnu) og mínus(keyrir í "öfuga átt")
+            dutyRight -= error/fasti; /// mínus því neikvæð tala
+            rc_set_motor(motor_right, dutyRight); /// Breyta þá hægra megin, því hann er slave en vinstri er master
+
+            rc_set_encoder_pos(motor_left,0);
+            rc_set_encoder_pos(motor_right,0);
+
+
         }
 
         else if(encoder_switch == 'a' || encoder_switch == 'd'){
             rc_set_encoder_pos(motor_left, 0);
             rc_set_encoder_pos(motor_right, 0);
 
-            printf("| Left | Right |\n\r");
+            printf("| a?Left | Right |\n\r");
             printf("|  %i  |  %i  |\n\r",EncoderLeft,EncoderRight);
         }
 
@@ -268,7 +281,7 @@ void *encoderEntry(void *param)
             printf("Im on a break\n\r");
         }
 
-        rc_usleep(800000); /// wait for 0.8 second
+        rc_usleep(100000); /// wait for 0.1 second
     }
 
     return NULL;
