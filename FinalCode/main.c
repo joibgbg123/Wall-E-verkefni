@@ -5,7 +5,7 @@
 #include <roboticscape.h>
 
 
-#define BASE_DUTY -0.4
+#define BASE_DUTY -0.6
 #define ADJUSTMENT 0.01
 #define Slow_adjusment 0.01
 
@@ -91,7 +91,7 @@ int main()
 
     ///Clean the Thread
 	//pthread_join(encoderThread, NULL); /// HERE4 !!!
-	int pthread_cancel(pthread_t encoderThread);
+	//int pthread_cancel(pthread_t encoderThread);
 
 	int pthread_cancel(pthread_t sensorThread);
 
