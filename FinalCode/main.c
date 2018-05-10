@@ -185,6 +185,7 @@ void selfDrive()
         int EncoderLeft = rc_get_encoder_pos(motor_left);
         int EncoderRight = -rc_get_encoder_pos(motor_right);
 
+
         printf("| her?Left | Right |\n\r");
         printf("|  %i  |  %i  |\n\r",EncoderLeft,EncoderRight);
         if(drivingState == 1){ //EncoderLeft == 0 && EncoderRight == 0
@@ -258,8 +259,9 @@ void *encoderEntry(void *param)
                 printf("-%f Right\n\r",ADJUSTMENT);
             }*/
 
-            error = rc_get_encoder_pos(motor_left) - rc_get_encoder_pos(motor_right); ///mínus því mínus(í jöfnu) og mínus(keyrir í "öfuga átt")
-            dutyRight += error/fasti; /// mínus því neikvæð tala
+
+            error = rc_get_encoder_pos(motor_left) + rc_get_encoder_pos(motor_right); ///plús því mínus(í jöfnu) og mínus(keyrir í "öfuga átt")
+            dutyRight -= error/fasti; /// mínus því neikvæð tala
             rc_set_motor(motor_right, dutyRight); /// Breyta þá hægra megin, því hann er slave en vinstri er master
 
             rc_set_encoder_pos(motor_left,0);
@@ -281,7 +283,7 @@ void *encoderEntry(void *param)
             printf("Im on a break\n\r");
         }
 
-        rc_usleep(1000000); /// wait for 0.1 second
+        rc_usleep(100000); /// wait for 0.1 second
     }
 
     return NULL;
